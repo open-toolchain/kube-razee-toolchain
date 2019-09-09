@@ -1,5 +1,6 @@
-# ![Icon](./.bluemix/secure-lock-kubernetes.png) Develop a Kubernetes app
+# ![Icon](./.bluemix/razee.png) Develop a Kubernetes app with Razee
 
+TODO update content.
 
 ### Continuously deliver a secure container app to a Kubernetes Cluster
 This Hello World application uses Docker with Node.js and includes a DevOps toolchain that is preconfigured for continuous delivery with Vulnerability Advisor, source control, issue tracking, and online editing, and deployment to the IBM Kubernetes Service.
@@ -11,7 +12,7 @@ Any code change to the Git repo will automatically be built, validated and deplo
 ![Icon](./.bluemix/toolchain.png)
 
 ### To get started, click this button:
-[![Create toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy?repository=https%3A%2F%2Fgithub.com%2Fopen-toolchain%2Fsecure-kube-toolchain&env_id=ibm:yp:us-south)
+[![Create toolchain](https://cloud.ibm.com/devops/graphics/create_toolchain_button.png)](https://cloud.ibm.com/devops/setup/deploy?repository=https%3A%2F%2Fus-south.git.cloud.ibm.com%2Fmkehoe%2Fkube-razee-toolchain&env_id=ibm:yp:eu-gb)
 
 It implements the following best practices:
 - sanity check the Dockerfile prior to attempting creating the image,

@@ -92,6 +92,20 @@
             },
             "type": "string",
             "pattern": "\\S"
+        },
+        "install-razee": {
+            "description": "Detection of Razee agent in cluster and option to choose the behavior when absent, either automatically install, or complain.",
+            "type": "string",
+            "enum": [
+                {
+                    "value": "true",
+                    "name": "Automatically install agent if absent"
+                },
+                {
+                    "value": "false",
+                    "name": "Complain if Razee agent is absent"
+                }
+            ]
         }
     },
     "required": ["app-name", "api-key", "registry-region", "registry-namespace", "prod-region", "prod-resource-group", "prod-cluster-name", "prod-cluster-namespace"],
@@ -212,7 +226,13 @@
                     "readonly": false
                 }
             ]
-        }, {
+        },
+        {
+            "type": "select",
+            "key": "install-razee",
+            "title": "Detection of Razee agent in cluster"
+        },
+        {
             "type": "table",
             "columnCount": 1,
             "widths": ["100%"],

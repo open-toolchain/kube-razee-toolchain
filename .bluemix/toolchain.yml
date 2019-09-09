@@ -7,7 +7,7 @@ template:
   description:
     $ref: "#/messages/template.description"
   header: '![](toolchain.svg?localize)'
-  icon: secure-lock-kubernetes.svg
+  icon: razee.svg
   required:
     - build
     - repo
@@ -20,7 +20,7 @@ template:
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
 toolchain:
-  name: 'kube-toolchain-{{timestamp}}'
+  name: 'kube-razee-toolchain-{{timestamp}}'
   template:
     getting_started:
       $ref: "#/messages/template.gettingStarted"
@@ -29,7 +29,7 @@ services:
     service_id: >
       $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
-      repo_name: 'hello-containers-{{timestamp}}'
+      repo_name: 'hello-{{timestamp}}'
       repo_url: >
         $env.type === 'link' ? 
           $env.app_repo : 'https://github.com/open-toolchain/hello-containers'
@@ -39,6 +39,16 @@ services:
       type: $env.type || 'clone'
       has_issues: true
       enable_traceability: true
+      private_repo: true
+  repo-config:
+    service_id: >
+      $env.source_provider ? $env.source_provider : 'hostedgit'
+    parameters:
+      repo_name: 'hello-config-{{timestamp}}'
+      type: 'new'
+      has_issues: false
+      enable_traceability: false
+      private_repo: true
   build:
     service_id: pipeline
     parameters:
@@ -59,6 +69,7 @@ services:
           PROD_RESOURCE_GROUP: '{{form.pipeline.parameters.prod-resource-group}}'
           PROD_CLUSTER_NAME: '{{form.pipeline.parameters.prod-cluster-name}}'
           PROD_CLUSTER_NAMESPACE: '{{form.pipeline.parameters.prod-cluster-namespace}}'
+          INSTALL_RAZEE: '{{form.pipeline.parameters.install-razee}}'
         execute: true
   webide:
     service_id: orion
@@ -67,5 +78,6 @@ form:
     parameters:
       app-name: '{{services.repo.parameters.repo_name}}'
       prod-cluster-namespace: prod
+      install-razee: "true"
     schema:
       $ref: deploy.json

@@ -34,7 +34,13 @@ stages:
       echo "GIT_BRANCH=${GIT_BRANCH}" >> $ARCHIVE_DIR/build.properties
       echo "GIT_COMMIT=${GIT_COMMIT}" >> $ARCHIVE_DIR/build.properties
       echo "SOURCE_BUILD_NUMBER=${BUILD_NUMBER}" >> $ARCHIVE_DIR/build.properties
-      cat $ARCHIVE_DIR/build.properties
+      # git user and password needed for later "Deploy Razee files" job
+      GIT_REMOTE_URL=$( git config --get remote.origin.url )
+      GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
+      GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )      
+      echo "GIT_USER=${GIT_USER}" >> $ARCHIVE_DIR/build.properties
+      echo "GIT_PASSWORD=${GIT_PASSWORD}" >> $ARCHIVE_DIR/build.properties
+      cat $ARCHIVE_DIR/build.properties | grep -v -i password
 
       # check if doi is integrated in this toolchain
       if jq -e '.services[] | select(.service_id=="draservicebroker")' _toolchain.json; then
@@ -102,7 +108,7 @@ stages:
   - name: Check registry
     type: builder
     build_type: cr
-    artifact_dir: ''
+    # artifact_dir: ''
     target:
       region_id: ${REGISTRY_REGION_ID}
       api_key: ${API_KEY}
@@ -165,7 +171,7 @@ stages:
       # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh
       # Check for vulnerabilities of built image using Vulnerability Advisor
       source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh")
-- name: DEPLOY
+- name: BUILD ARTIFACT
   inputs:
   - type: job
     stage: CONTAINERIZE
@@ -176,36 +182,100 @@ stages:
   - name: buildprops
     value: build.properties
     type: file
+  - name: DEPLOYMENT_FILE
+    value: deployment.yml
+    type: text
+  jobs:
+  - name: Build deploy.yml artifact
+    type: builder
+    artifact_dir: ''
+    build_type: shell
+    script:
+      $ref: build_deploy_artifact.sh
+      $refType: text
+- name: DEPLOY
+  inputs:
+  - type: job
+    stage: BUILD ARTIFACT
+    job: Build deploy.yml artifact
+  triggers:
+  - type: stage
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: CLUSTER_REGION
+    value: ${PROD_REGION_ID}
+    type: text
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
   - name: DEPLOYMENT_FILE
     value: deployment.yml
     type: text
+  - name: REMOTERESOURCE_FILE
+    value: remoteresource.yml
+    type: text
   - name: APP_URL
     value: undefined
     type: text  
+  - name: CONFIG_REPO_BRANCH
+    value: master
+    type: text
   jobs:
-  - name: Deploy to Kubernetes
+  - name: Deploy commit
+    type: builder
+    artifact_dir: ''
+    build_type: shell
+    script:
+      $ref: deploy_commit.sh
+      $refType: text
+- name: SETUP
+  inputs:
+  - type: job
+    stage: DEPLOY
+    job: Deploy commit
+  triggers:
+  - type: stage
+    enabled: false
+  properties:
+  - name: buildprops
+    value: build.properties
+    type: file
+  - name: IMAGE_NAME
+    value: ${APP_NAME}
+    type: text
+  - name: CLUSTER_REGION
+    value: ${PROD_REGION_ID}
+    type: text
+  - name: CLUSTER_NAMESPACE
+    value: ${PROD_CLUSTER_NAMESPACE}
+    type: text
+  - name: DEPLOYMENT_FILE
+    value: deployment.yml
+    type: text
+  - name: INSTALL_RAZEE
+    value: ${INSTALL_RAZEE}
+    type: text
+  - name: REMOTERESOURCE_FILE
+    value: remoteresource.yml
+    type: text
+  - name: APP_URL
+    value: undefined
+    type: text  
+  - name: CONFIG_REPO_BRANCH
+    value: master
+    type: text
+  jobs:
+  - name: Apply Razee resource
     type: deployer
     target:
       region_id: ${PROD_REGION_ID}
       api_key: ${API_KEY}
       kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/check_predeploy.sh) and 'source' it from your pipeline job
-      #    source ./scripts/check_predeploy_kubectl.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_and_deploy_kubectl.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_and_deploy_kubectl.sh
-
-      # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
-      # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_and_deploy_kubectl.sh")
+    script:
+      $ref: apply_razee_resource.sh
+      $refType: text
   - name: Check health
     type: deployer
     target:
