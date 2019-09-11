@@ -1,12 +1,6 @@
-
-
 #!/bin/bash
 # uncomment to debug the script
 # set -x
-
-echo "--------"
-echo "Will attempt to push Razee configuration files to config repo"
-echo "---"
 
 # This file is a modified version of the following script:
 # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_and_deploy_kubectl.sh
@@ -37,7 +31,7 @@ echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}"
 echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}"
 echo "CLUSTER_REGION=${CLUSTER_REGION}"
 echo "CLUSTER_NAMESPACE=${CLUSTER_NAMESPACE}"
-#  metadata.name from the config repo config.yml file:
+#  metadata.name from the config repo config.yml file, from a previous job
 echo "CONFIG_NAME=${CONFIG_NAME}"
 echo "INSTALL_RAZEE=${INSTALL_RAZEE}"
 
@@ -279,7 +273,7 @@ fi
 CONFIG_REPO_SECRET_NAME=$(cat $CONFIG_REPO_SECRET_FILE | yq read - "metadata.name" | sed "s/${RESOURCE_SUFFIX}$//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/")
 
 echo "Check secret exists: ${CONFIG_REPO_SECRET_NAME}"
-FOUND_SECRET=$(kubectl get secret -o name -n ${CLUSTER_NAMESPACE} --output=yaml | grep "^secret/${CONFIG_REPO_SECRET_NAME}$" || true )
+FOUND_SECRET=$(kubectl get secret -o name -n "${CLUSTER_NAMESPACE}" --output=yaml | grep "^secret/${CONFIG_REPO_SECRET_NAME}$" || true )
 if [ ! -z "${FOUND_SECRET}" ];
 then
   echo "Secret ${CONFIG_REPO_SECRET_NAME} exists in cluster."
@@ -344,7 +338,6 @@ if [ ! -f ${REMOTERESOURCE_FILE} ]; then
   CONFIG_FILE_URL=""
   CONFIG_COMMIT_DEPLOY_URL=""
   CONFIG_DEPLOY_AUTH_HEADER_NAME=""
-  CONFIG_DEPLOY_AUTH_HEADER_VALUE=""
   CONFIG_DEPLOY_EXTRA_HEADERS=""
   if [[ "${CONFIG_TOOL_INTEGRATION_ID}" == "hostedgit" || "${CONFIG_TOOL_INTEGRATION_ID}" == "gitlab" ]]; then
     CONFIG_REPO_USER_AND_REPO=$(echo "${CONFIG_REPO_URL}" | sed -E "s~^https://[^/]+/(.+)$~\1~" | jq -rR @uri )
@@ -432,11 +425,11 @@ DEPLOY_IMAGE_EXPECTED_VALUE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 for ITER in {1..15}
 do
   echo "Check deployment exists: ${DEPLOYMENT_NAME}"
-  FOUND_DEPLOY=$(kubectl get deploy -n ${CLUSTER_NAMESPACE} --output=yaml | yq r - "items[*].metadata.name" | grep "^- ${DEPLOYMENT_NAME}$" || true )
+  FOUND_DEPLOY=$(kubectl get deploy -n "${CLUSTER_NAMESPACE}" --output=yaml | yq r - "items[*].metadata.name" | grep "^- ${DEPLOYMENT_NAME}$" || true )
   if [ ! -z "${FOUND_DEPLOY}" ];
   then
     echo "Deployment ${DEPLOYMENT_NAME} exists."
-    DEPLOY_LABEL_ACTUAL_VALUE=$(kubectl get deploy "${DEPLOYMENT_NAME}" -o yaml -n ${CLUSTER_NAMESPACE} | yq r - "${DEPLOY_CHANGED_IMAGE_YQPATH}")
+    DEPLOY_LABEL_ACTUAL_VALUE=$(kubectl get deploy "${DEPLOYMENT_NAME}" -o yaml -n "${CLUSTER_NAMESPACE}" | yq r - "${DEPLOY_CHANGED_IMAGE_YQPATH}")
     # If deployed image contains @sha, only compare the value before the @, else unchanged
     DEPLOY_LABEL_ACTUAL_VALUE=$( echo "${DEPLOY_LABEL_ACTUAL_VALUE}" | sed -E "/@/ s/(.+)@.+/\1/" )
 
@@ -511,12 +504,12 @@ fi
 echo "DEPLOYED MustacheTemplates:"
 # can use "describe" for detailed output or "get" for short output:
 # kubectl describe MustacheTemplate ${REMOTE_NAME} --namespace ${CLUSTER_NAMESPACE}
-kubectl get MustacheTemplate --selector app=${APP_NAME} --namespace ${CLUSTER_NAMESPACE}
+kubectl get MustacheTemplate --selector "app=${APP_NAME}" --namespace "${CLUSTER_NAMESPACE}"
 
 echo "DEPLOYED RemoteResources:"
 # can use "describe" for detailed output or "get" for short output:
 # kubectl describe RemoteResource ${REMOTE_NAME} --namespace ${CLUSTER_NAMESPACE}
-kubectl get RemoteResource --selector app=${APP_NAME} --namespace ${CLUSTER_NAMESPACE}
+kubectl get RemoteResource --selector "app=${APP_NAME}" --namespace "${CLUSTER_NAMESPACE}"
 
 
 echo "=========================================================="
