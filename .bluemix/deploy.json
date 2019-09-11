@@ -94,16 +94,16 @@
             "pattern": "\\S"
         },
         "install-razee": {
-            "description": "Detection of Razee agent in cluster and option to choose the behavior when absent, either automatically install, or complain.",
+            "description": "Razee deployment options",
             "type": "string",
             "enum": [
                 {
                     "value": "true",
-                    "name": "Automatically install agent if absent"
+                    "name": "Install agent and register application"
                 },
                 {
                     "value": "false",
-                    "name": "Complain if Razee agent is absent"
+                    "name": "Register application only"
                 }
             ]
         }
@@ -230,7 +230,7 @@
         {
             "type": "select",
             "key": "install-razee",
-            "title": "Detection of Razee agent in cluster"
+            "title": "Razee deployment options"
         },
         {
             "type": "table",
