@@ -92,19 +92,9 @@ stages:
   jobs:
   - name: Check dockerfile
     type: tester
-    script: |-
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/check_dockerfile.sh) and 'source' it from your pipeline job
-      #    source ./scripts/check_prebuild.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_dockerfile.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_dockerfile.sh
-
-      # This script lints Dockerfile.
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_dockerfile.sh")
+    script:
+      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_dockerfile.sh
+      $refType: text
   - name: Check registry
     type: builder
     build_type: cr
@@ -114,19 +104,9 @@ stages:
       api_key: ${API_KEY}
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
-    script: |-
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/check_registry.sh) and 'source' it from your pipeline job
-      #    source ./scripts/check_registry.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_registry.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_registry.sh
-
-      # This script checks presence of registry namespace.
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_registry.sh")
+    script:
+      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_registry.sh
+      $refType: text
   - name: Build container image
     type: builder
     build_type: cr
@@ -136,21 +116,9 @@ stages:
       api_key: ${API_KEY}
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/build_image.sh) and 'source' it from your pipeline job
-      #    source ./scripts/build_image.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image.sh
-
-      # This script does build a Docker image into IBM Container Service private image registry.
-      # Minting image tag using format: BUILD_NUMBER-BRANCH-COMMIT_ID-TIMESTAMP
-      # Also copies information into a build.properties file, so they can be reused later on by other scripts (e.g. image url, chart name, ...)
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image.sh")
+    script:
+      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image.sh
+      $refType: text
   - name: Check vulnerabilities
     type: tester
     test_type: vulnerabilityadvisor
@@ -159,19 +127,10 @@ stages:
     target:
       region_id: ${REGISTRY_REGION_ID}
       api_key: ${API_KEY}
-    script: |
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/check_vulnerabilities.sh) and 'source' it from your pipeline job
-      #    source ./scripts/check_vulnerabilities.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh
-      # Check for vulnerabilities of built image using Vulnerability Advisor
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh")
-- name: BUILD ARTIFACT
+    script:
+      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh
+      $refType: text
+- name: DEPLOY
   inputs:
   - type: job
     stage: CONTAINERIZE
@@ -185,56 +144,41 @@ stages:
   - name: DEPLOYMENT_FILE
     value: deployment.yml
     type: text
-  jobs:
-  - name: Build deploy.yml artifact
-    type: builder
-    artifact_dir: ''
-    build_type: shell
-    script:
-      $ref: build_deploy_artifact.sh
-      $refType: text
-- name: DEPLOY
-  inputs:
-  - type: job
-    stage: BUILD ARTIFACT
-    job: Build deploy.yml artifact
-  triggers:
-  - type: stage
-  properties:
-  - name: buildprops
-    value: build.properties
-    type: file
   - name: CLUSTER_REGION
     value: ${PROD_REGION_ID}
     type: text
   - name: CLUSTER_NAMESPACE
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
-  - name: DEPLOYMENT_FILE
-    value: deployment.yml
-    type: text
-  - name: REMOTERESOURCE_FILE
-    value: remoteresource.yml
-    type: text
-  - name: APP_URL
-    value: undefined
-    type: text  
   - name: CONFIG_REPO_BRANCH
     value: master
     type: text
+  - name: CONFIG_REPO_NAME
+    value: ''
+    type: text
+  - name: CONFIG_REPO_URL
+    value: ''
+    type: text
   jobs:
-  - name: Deploy commit
+  - name: Prepare Razee deploy
     type: builder
     artifact_dir: ''
     build_type: shell
     script:
-      $ref: deploy_commit.sh
+      $ref: prepare_deploy.sh
       $refType: text
-- name: SETUP
+  - name: Trigger Razee deploy
+    type: builder
+    artifact_dir: ''
+    build_type: shell
+    script:
+      $ref: trigger_config.sh
+      $refType: text
+- name: SETUP RAZEE
   inputs:
   - type: job
     stage: DEPLOY
-    job: Deploy commit
+    job: Trigger Razee deploy
   triggers:
   - type: stage
     enabled: false
@@ -267,31 +211,21 @@ stages:
     value: master
     type: text
   jobs:
-  - name: Apply Razee resource
+  - name: Install Razee agent
     type: deployer
     target:
       region_id: ${PROD_REGION_ID}
       api_key: ${API_KEY}
       kubernetes_cluster: ${PROD_CLUSTER_NAME}
     script:
-      $ref: apply_razee_resource.sh
+      $ref: install_razee.sh
       $refType: text
-  - name: Check health
+  - name: Register app with Razee
     type: deployer
     target:
       region_id: ${PROD_REGION_ID}
-      resource_group: ${PROD_RESOURCE_GROUP}
       api_key: ${API_KEY}
       kubernetes_cluster: ${PROD_CLUSTER_NAME}
-    script: |-
-      #!/bin/bash
-      # uncomment to debug the script
-      # set -x
-      # copy the script below into your app code repo (e.g. ./scripts/check_health.sh) and 'source' it from your pipeline job
-      #    source ./scripts/check_health.sh
-      # alternatively, you can source it from online script:
-      #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
-      # ------------------
-      # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh
-      # Check liveness and readiness probes to confirm application is healthy
-      source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
+    script:
+      $ref: register_app.sh
+      $refType: text

@@ -138,8 +138,6 @@ else
   cd ..
 fi
 
-# Record config repo info
-echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}" >> build.properties
-echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}" >> build.properties
-echo "Updated build.properties:"
-cat build.properties | sed -E 's/(.+PASSWORD.*)=.+/\1=****/'
+# export so the variables are available in the next job:
+export CONFIG_REPO_NAME="${CONFIG_REPO_NAME}"
+export CONFIG_REPO_URL="${CONFIG_REPO_URL}"
