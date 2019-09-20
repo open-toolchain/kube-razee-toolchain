@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 # uncomment to debug the script
 # set -x
@@ -48,7 +46,7 @@ echo "UPDATING manifest with image information, namespace, labels, & extract dep
 # assuming deployment.yml has an initial kind: Deployment, ---, then a kind: Service for the port
 SPLIT_INDEX=$( cat ${DEPLOYMENT_FILE} | grep -n "^\-\-\-$" | sed -E "s/:---//" )
 DEPLOY_FILE="deploy.yml"
-head -n ${SPLIT_INDEX} "${DEPLOYMENT_FILE}" | yq r - > "${DEPLOY_FILE}"
+head -n "${SPLIT_INDEX}" "${DEPLOYMENT_FILE}" | yq r - > "${DEPLOY_FILE}"
 
 echo "Updating ${DEPLOY_FILE} with image: ${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
 # if app repo ends in - and a 17 digit timestamp, append that suffix to all kube resources, else empty "" suffix
@@ -94,7 +92,7 @@ then
 fi
 # Augment URL with git user & password
 CONFIG_ACCESS_REPO_URL="${CONFIG_REPO_URL:0:8}${GIT_USER}:${GIT_PASSWORD}@${CONFIG_REPO_URL:8}"
-REDACTED_PASSWORD=`echo $GIT_PASSWORD | sed -E 's/.+/*****/g'`
+REDACTED_PASSWORD=$(echo "${GIT_PASSWORD}" | sed -E 's/.+/*****/g')
 echo -e "Located config repo: ${CONFIG_REPO_URL}, with access token: ${GIT_USER}:${REDACTED_PASSWORD}"
 
 git config --global user.email "autobuild@not-an-email.example.com"
@@ -102,9 +100,9 @@ git config --global user.name "Automatic Build: ibmcloud-toolchain-${PIPELINE_TO
 git config --global push.default simple
 
 echo "Fetching config repo"
-git clone ${CONFIG_ACCESS_REPO_URL}
+git clone "${CONFIG_ACCESS_REPO_URL}"
 
-cd ${CONFIG_REPO_NAME}
+cd "${CONFIG_REPO_NAME}"
 echo "copy deploy file to ${ARTIFACTS_FOLDER_NAME}/${ARTIFACTS_DEPLOY_FILE_NAME}"
 mkdir -p "${ARTIFACTS_FOLDER_NAME}"
 cp "../${DEPLOY_FILE}" "${ARTIFACTS_FOLDER_NAME}/${ARTIFACTS_DEPLOY_FILE_NAME}"
@@ -116,7 +114,7 @@ git status
 # note for initial empty repo, no branches will be found
 BRANCHES_FOUND=$(git branch)
 CHANGED_FILES=""
-if [[ ! -z "${BRANCHES_FOUND}" ]]; then 
+if [ ! -z "${BRANCHES_FOUND}" ]; then 
   CHANGED_FILES=$(git diff-index HEAD --name-only)
 else
   CHANGED_FILES="initial"

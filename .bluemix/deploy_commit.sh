@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 # uncomment to debug the script
 # set -x
@@ -35,8 +33,7 @@ echo "=========================================================="
 echo "UPDATING config repo config.yml"
 # Note CONFIG_REPO_NAME, CONFIG_REPO_URL coming from previous stage output
 # Augment URL with git user & password
-CONFIG_ACCESS_REPO_URL="${CONFIG_REPO_URL:0:8}${GIT_USER}:${GIT_PASSWORD}@${CONFIG_REPO_URL:8}"
-REDACTED_PASSWORD=`echo $GIT_PASSWORD | sed -E 's/.+/*****/g'`
+REDACTED_PASSWORD=$(echo "$GIT_PASSWORD" | sed -E 's/.+/*****/g')
 echo -e "Located config repo: ${CONFIG_REPO_URL}, with access token: ${GIT_USER}:${REDACTED_PASSWORD}"
 
 git config --global user.email "autobuild@not-an-email.example.com"
