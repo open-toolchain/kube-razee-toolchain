@@ -3,7 +3,6 @@
 # set -x
 
 # Input env variables (can be received via a pipeline environment properties.file.
-echo "DEPLOYMENT_FILE=${DEPLOYMENT_FILE}"
 echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}"
 echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}"
 echo "IMAGE_NAME=${IMAGE_NAME}"
@@ -33,23 +32,23 @@ echo "=========================================================="
 echo "UPDATING config repo config.yml"
 # Note CONFIG_REPO_NAME, CONFIG_REPO_URL coming from previous stage output
 # Augment URL with git user & password
-REDACTED_PASSWORD=$(echo "$GIT_PASSWORD" | sed -E 's/.+/*****/g')
-echo -e "Located config repo: ${CONFIG_REPO_URL}, with access token: ${GIT_USER}:${REDACTED_PASSWORD}"
+
+# Augment URL with git user & password
+CONFIG_ACCESS_REPO_URL="${CONFIG_REPO_URL:0:8}${GIT_USER}:${GIT_PASSWORD}@${CONFIG_REPO_URL:8}"
+REDACTED_PASSWORD=$(echo "${GIT_PASSWORD}" | sed -E 's/.+/*****/g')
+echo "Using config repo: ${CONFIG_REPO_URL}, with access token: ${GIT_USER}:${REDACTED_PASSWORD}"
 
 git config --global user.email "autobuild@not-an-email.example.com"
 git config --global user.name "Automatic Build: ibmcloud-toolchain-${PIPELINE_TOOLCHAIN_ID}"
 git config --global push.default simple
 
-
-# git clone ${CONFIG_ACCESS_REPO_URL}
-cd ${CONFIG_REPO_NAME}
-echo "Updating config repo:"
-git fetch origin
-git reset --hard origin/master
+echo "Fetching config repo"
+git clone "${CONFIG_ACCESS_REPO_URL}"
+cd "${CONFIG_REPO_NAME}"
 
 echo "=========================================================="
 echo "UPDATING config.yml file"
-
+# extract region from ibm:yp:us-south as us-south
 REGION=$(echo "${CLUSTER_REGION}" | sed -E 's/.+:([^:]+)/\1/')
 COMMIT_KEY="${IMAGE_NAME}_${CLUSTER_NAMESPACE}_${REGION}"
 NEW_VALUE="${GIT_COMMIT}"
@@ -111,10 +110,10 @@ else
   cd ..
 fi
 
-
-# Record config info
+# Record config repo info
 CONFIG_NAME=$( cat "${CONFIG_REPO_NAME}/${CONFIG_FILE}" | yq read - "metadata.name")
 echo "CONFIG_NAME=${CONFIG_NAME}" >> build.properties
+echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}" >> build.properties
+echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}" >> build.properties
 echo "Updated build.properties"
 cat build.properties | sed -E 's/(.+PASSWORD.*)=.+/\1=****/'
-
