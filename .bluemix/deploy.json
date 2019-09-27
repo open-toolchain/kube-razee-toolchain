@@ -94,16 +94,22 @@
             "pattern": "\\S"
         },
         "install-razee": {
-            "description": "Razee deployment options",
+            "description": {
+                "$ref": "#/messages/deploy.installRazeeDescription"
+            },
             "type": "string",
             "enum": [
                 {
                     "value": "true",
-                    "name": "Install agent and register application"
+                    "name": {
+                        "$ref": "#/messages/deploy.optionAgentAndApp"
+                    }
                 },
                 {
                     "value": "false",
-                    "name": "Register application only"
+                    "name": {
+                        "$ref": "#/messages/deploy.optionAppOnly"
+                    }
                 }
             ]
         }
@@ -230,7 +236,9 @@
         {
             "type": "select",
             "key": "install-razee",
-            "title": "Razee deployment options"
+            "title": {
+                "$ref": "#/messages/deploy.installRazeeName"
+            }
         },
         {
             "type": "table",
