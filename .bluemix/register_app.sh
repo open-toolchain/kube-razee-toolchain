@@ -282,7 +282,7 @@ if [ ! -f ${REMOTERESOURCE_FILE} ]; then
   # would be better to have RemoteResource headers secretKeyRef, 
   # but that mechanism doesn't exist yet.
   cat > "${REMOTERESOURCE_FILE}" << EOF
-apiVersion: "kapitan.razee.io/v1alpha1"
+apiVersion: "deploy.razee.io/v1alpha1"
 kind: MustacheTemplate
 metadata:
   name: hello-mustachetemplate${RESOURCE_SUFFIX}
@@ -303,7 +303,7 @@ spec:
         name: ${CONFIG_NAME}
         key: "${COMMIT_KEY}"
   templates:
-  - apiVersion: kapitan.razee.io/v1alpha1
+  - apiVersion: deploy.razee.io/v1alpha1
     kind: RemoteResource
     metadata:
       name: hello-config-remote${RESOURCE_SUFFIX}
@@ -315,7 +315,7 @@ spec:
           url: "${CONFIG_FILE_URL}"
           headers:
             ${CONFIG_DEPLOY_AUTH_HEADER_NAME}: "${ACCESS_TOKEN_MUSTACHE}"${CONFIG_DEPLOY_EXTRA_HEADERS}
-  - apiVersion: kapitan.razee.io/v1alpha1
+  - apiVersion: deploy.razee.io/v1alpha1
     kind: RemoteResource
     metadata:
       name: hello-deploy-remote${RESOURCE_SUFFIX}
