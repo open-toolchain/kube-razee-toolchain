@@ -68,7 +68,7 @@ fi
 echo "=========================================================="
 echo "CHECKING Razee deployment agent is installed in the cluster"
 echo "Checking Razee RemoteResource api-resource type registered:"
-REMOTE_RESOURCE_TYPE="remoteresources.kapitan.razee.io"
+REMOTE_RESOURCE_TYPE="remoteresources.deploy.razee.io"
 #  the || true is to prevent fail on error when grep doesn't find it
 FOUND_REMOTE_RESOURCE_TYPE=$(kubectl api-resources --output=name | grep "^${REMOTE_RESOURCE_TYPE}$" || true )
 if [ ! -z "${FOUND_REMOTE_RESOURCE_TYPE}" ];
@@ -77,7 +77,7 @@ then
 else
   echo "Razee RemoteResource type does not yet exist."
 
-  RAZEE_KAPITAN_URL="https://github.com/razee-io/Kapitan-delta/releases/latest/download/resource.yaml"
+  RAZEE_DEPLOY_URL="https://github.com/razee-io/razeedeploy-delta/releases/latest/download/resource.yaml"
 
   if [[ "${INSTALL_RAZEE}" != 'true' ]];
   then
@@ -85,33 +85,33 @@ else
     no_color="\x1b[0m"
     echo -e "${red}Razee deployment agent not found in the cluster${no_color}"
     echo "Install it manually with the command:"
-    echo "  kubectl apply -f '${RAZEE_KAPITAN_URL}'"
+    echo "  kubectl apply -f '${RAZEE_DEPLOY_URL}'"
     echo "or change this pipeline stage environment property INSTALL_RAZEE to true and re-run."
     echo "For details about Razee see: https://github.com/razee-io/Razee"
     exit 1
   fi
 
   echo "Attempt register Razee deployment agent in cluster"
-  echo "kubectl apply -f '${RAZEE_KAPITAN_URL}'"
-  kubectl apply -f "${RAZEE_KAPITAN_URL}"
+  echo "kubectl apply -f '${RAZEE_DEPLOY_URL}'"
+  kubectl apply -f "${RAZEE_DEPLOY_URL}"
   echo "Verify Razee resources exist"
-  FOUND_DEPLOY_KAPITAN_DELTA=""
+  FOUND_DEPLOY_DELTA=""
   FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER=""
   FOUND_POD_REMOTE_RESOURCE_CONTROLLER=""
   for ITER in {1..5}
   do
-    if [ -z "${FOUND_DEPLOY_KAPITAN_DELTA}" ];
+    if [ -z "${FOUND_DEPLOY_DELTA}" ];
     then
-      FOUND_DEPLOY_KAPITAN_DELTA=$(kubectl get deploy -n razee --output=name | grep "kapitan-delta" || true )
-      if [ ! -z "${FOUND_DEPLOY_KAPITAN_DELTA}" ];
+      FOUND_DEPLOY_DELTA=$(kubectl get deploy -n razee --output=name | grep "razeedeploy-delta" || true )
+      if [ ! -z "${FOUND_DEPLOY_DELTA}" ];
       then
-        echo "Found deploy kapitan-delta";
-        kubectl get deploy -n razee | grep "kapitan-delta"
+        echo "Found deploy razeedeploy-delta";
+        kubectl get deploy -n razee | grep "razeedeploy-delta"
       else
-        echo "Did not find deploy kapitan-delta";
+        echo "Did not find deploy razeedeploy-delta";
       fi
     fi
-    if [ ! -z "${FOUND_DEPLOY_KAPITAN_DELTA}" ] && [ -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ]; 
+    if [ ! -z "${FOUND_DEPLOY_DELTA}" ] && [ -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ]; 
     then
       FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER=$(kubectl get deploy -n razee --output=name | grep "remoteresource-controller" || true )
       if [ ! -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ];
@@ -123,7 +123,7 @@ else
       fi
     fi
 
-    if [ ! -z "${FOUND_DEPLOY_KAPITAN_DELTA}" ] && [ ! -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ] && [ -z "${FOUND_POD_REMOTE_RESOURCE_CONTROLLER}" ]; 
+    if [ ! -z "${FOUND_DEPLOY_DELTA}" ] && [ ! -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ] && [ -z "${FOUND_POD_REMOTE_RESOURCE_CONTROLLER}" ]; 
     then
       FOUND_POD_REMOTE_RESOURCE_CONTROLLER=$(kubectl get pod -n razee --output=name | grep "remoteresource-controller" || true )
       if [ ! -z "${FOUND_DEPLOY_REMOTE_RESOURCE_CONTROLLER}" ];
