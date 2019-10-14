@@ -130,7 +130,7 @@ stages:
     script:
       $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh
       $refType: text
-- name: DEPLOY
+- name: DEPLOY WITH RAZEE
   inputs:
   - type: job
     stage: CONTAINERIZE
@@ -174,10 +174,10 @@ stages:
     script:
       $ref: trigger_config.sh
       $refType: text
-- name: SETUP RAZEE
+- name: SETUP CLUSTER WITH RAZEE
   inputs:
   - type: job
-    stage: DEPLOY
+    stage: DEPLOY WITH RAZEE
     job: Trigger Razee deploy
   triggers:
   - type: stage
