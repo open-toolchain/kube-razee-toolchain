@@ -144,15 +144,35 @@ fi
 echo "=========================================================="
 echo "UPDATING manifest, extract service.yml, update with app name, service name, etc"
 # if app repo ends in - and a 17 digit timestamp, append that suffix to all kube resources, else empty "" suffix
+DEPLOYMENT_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="deployment") | .key')
+if [ -z "$DEPLOYMENT_DOC_INDEX" ]; then
+  echo "No Kubernetes Deployment definition found in $DEPLOYMENT_FILE. Assuming deployment is YAML document with index 0"
+  DEPLOYMENT_DOC_INDEX=0
+fi
 RESOURCE_SUFFIX=$(echo "${IMAGE_NAME}" | sed -E "s/^.*(-[0-9]{17})$/\1/" | sed -E "/^-[0-9]{17}$/ ! s/.*//")
-DEPLOYMENT_NAME=$( cat $DEPLOYMENT_FILE | yq read --doc 0 - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/")
+if [ -z "$RESOURCE_SUFFIX" ]; then
+  # No RESOURCE_SUFFIX to append to the deployment name
+  DEPLOYMENT_NAME=$( cat $DEPLOYMENT_FILE | yq read --doc $DEPLOYMENT_DOC_INDEX - "metadata.name" )
+else 
+  # Append RESOURCE_SUFFIX to the deployment name
+  DEPLOYMENT_NAME=$( cat $DEPLOYMENT_FILE | yq read --doc $DEPLOYMENT_DOC_INDEX - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/" )
+fi
 # assuming deployment.yml has an initial kind: Deployment, then ---, then a kind: Service for the port
-SPLIT_INDEX=$( cat ${DEPLOYMENT_FILE} | grep -n "^\-\-\-$" | sed -E "s/:---//" )
-SPLIT_INDEX=$(( SPLIT_INDEX + 1))
+SERVICE_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="service") | .key')
+if [ -z "$SERVICE_DOC_INDEX" ]; then
+  echo "No Kubernetes Service definition found in $DEPLOYMENT_FILE. Assuming service is YAML document with index 1"
+  DEPLOYMENT_DOC_INDEX=1
+fi
 SERVICE_FILE="service.yml"
-tail -n +${SPLIT_INDEX} "${DEPLOYMENT_FILE}" > "${SERVICE_FILE}"
+yq read --doc $SERVICE_DOC_INDEX $DEPLOYMENT_FILE > "${SERVICE_FILE}"
 
-SERVICE_NAME=$( cat $SERVICE_FILE | yq read - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/")
+if [ -z "$RESOURCE_SUFFIX" ]; then
+  # No RESOURCE_SUFFIX to append to the deployment name
+  SERVICE_NAME=$( cat $SERVICE_FILE | yq read - "metadata.name")
+else
+  # Append RESOURCE_SUFFIX to the deployment name
+  SERVICE_NAME=$( cat $SERVICE_FILE | yq read - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/" )
+fi
 cp $SERVICE_FILE "${SERVICE_FILE}.bak"
 cat "${SERVICE_FILE}.bak" \
   | yq write - "metadata.name" "${SERVICE_NAME}" \
@@ -221,7 +241,7 @@ else
     | yq write - "data.password" "${CONFIG_SECRET_BASE64}" \
     > "${CONFIG_REPO_SECRET_FILE}"
   rm "${CONFIG_REPO_SECRET_FILE}.bak"
-  # Show the config repos ecret file content w/o the password value
+  # Show the config repo secret file content w/o the password value
   cat ${CONFIG_REPO_SECRET_FILE} | yq write - "data.password" "***"
 
   echo "kubectl apply -f '${CONFIG_REPO_SECRET_FILE}' --namespace ${CLUSTER_NAMESPACE}"
