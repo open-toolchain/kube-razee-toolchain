@@ -221,7 +221,8 @@ else
     | yq write - "data.password" "${CONFIG_SECRET_BASE64}" \
     > "${CONFIG_REPO_SECRET_FILE}"
   rm "${CONFIG_REPO_SECRET_FILE}.bak"
-  cat ${CONFIG_REPO_SECRET_FILE} | sed -E "s/${CONFIG_SECRET_BASE64}/*****/g"
+  # Show the config repos ecret file content w/o the password value
+  cat ${CONFIG_REPO_SECRET_FILE} | yq write - "data.password" "***"
 
   echo "kubectl apply -f '${CONFIG_REPO_SECRET_FILE}' --namespace ${CLUSTER_NAMESPACE}"
   kubectl apply -f "${CONFIG_REPO_SECRET_FILE}" --namespace "${CLUSTER_NAMESPACE}"
