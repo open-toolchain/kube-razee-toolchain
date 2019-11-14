@@ -41,22 +41,31 @@ fi
 
 
 echo "=========================================================="
-echo "UPDATING manifest with image information, namespace, labels, & extract deploy.yml"
-# echo "SPLIT manifest to deploy.yml and service.yml"
-# assuming deployment.yml has an initial kind: Deployment, ---, then a kind: Service for the port
-SPLIT_INDEX=$( cat ${DEPLOYMENT_FILE} | grep -n "^\-\-\-$" | sed -E "s/:---//" )
+echo "UPDATING manifest with image information, namespace, labels & extract deploy.yml"
+DEPLOYMENT_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="deployment") | .key')
+if [ -z "$DEPLOYMENT_DOC_INDEX" ]; then
+  echo "No Kubernetes Deployment definition found in $DEPLOYMENT_FILE. Assuming deployment is YAML document with index 0"
+  DEPLOYMENT_DOC_INDEX=0
+fi
 DEPLOY_FILE="deploy.yml"
-head -n "${SPLIT_INDEX}" "${DEPLOYMENT_FILE}" | yq r - > "${DEPLOY_FILE}"
+yq read --doc $DEPLOYMENT_DOC_INDEX $DEPLOYMENT_FILE > "${DEPLOY_FILE}"
 
 echo "Updating ${DEPLOY_FILE} with image: ${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
 # if app repo ends in - and a 17 digit timestamp, append that suffix to all kube resources, else empty "" suffix
 RESOURCE_SUFFIX=$(echo "${IMAGE_NAME}" | sed -E "s/^.*(-[0-9]{17})$/\1/" | sed -E "/^-[0-9]{17}$/ ! s/.*//")
-DEPLOYMENT_NAME=$( cat $DEPLOY_FILE | yq read - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/")
+if [ -z "$RESOURCE_SUFFIX" ]; then
+  # No RESOURCE_SUFFIX to append to the deployment name
+  DEPLOYMENT_NAME=$( cat $DEPLOY_FILE | yq read - "metadata.name")
+else 
+  # Append RESOURCE_SUFFIX to the deployment name
+  DEPLOYMENT_NAME=$( cat $DEPLOY_FILE | yq read - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/")
+fi
 cp $DEPLOY_FILE "${DEPLOY_FILE}.bak"
 cat "${DEPLOY_FILE}.bak" \
   | yq write - "spec.template.spec.containers[0].image" "${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}" \
   | yq write - "metadata.labels.app" "${DEPLOYMENT_NAME}" \
   | yq write - "metadata.name" "${DEPLOYMENT_NAME}" \
+  | yq write - "spec.selector.matchLabels.app" "${DEPLOYMENT_NAME}" \
   | yq write - "spec.template.metadata.labels.app" "${DEPLOYMENT_NAME}" \
   | yq write - "spec.template.spec.containers[0].name" "${DEPLOYMENT_NAME}" \
   > ${DEPLOY_FILE}
