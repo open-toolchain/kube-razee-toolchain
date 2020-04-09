@@ -1,7 +1,6 @@
 #!/bin/bash
 # uncomment to debug the script
 # set -x
-export IKS_BETA_VERSION=1.0
 # This script checks the IBM Container Service cluster is ready, 
 # checks if the Razee deployment agent is present in the cluster, 
 # and may apply the Razee agent to the cluster if it is absent.

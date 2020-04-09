@@ -1,7 +1,6 @@
 #!/bin/bash
 # uncomment to debug the script
 # set -x
-export IKS_BETA_VERSION=1.0
 # This file is a modified version of the following script:
 # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_and_deploy_kubectl.sh
 # based on the version:
