@@ -1,0 +1,125 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: kube-razee-install-pipeline
+spec:
+  params:
+    - name: repository
+      description: the git repo
+    - name: branch
+      description: the branch for the git repo
+    - name: revision
+      description: the git revision/commit for the git repo
+      default: ""
+    - name: path-to-dockerfile
+      default: '.'
+    - name: registry-region
+      description: The IBM Cloud region for image registry
+    - name: registry-namespace
+      description: container registry namespace
+    - name: app-name
+      description: application name
+    - name: image-name
+      description: image name
+    - name: dev-region
+    - name: dev-resource-group
+    - name: install-razee
+    - name: cluster-name
+      description: the name of the cluster to target
+    - name: dev-cluster-namespace
+      description: the namespace
+    - name: pipeline-debug
+      default: "0"
+  workspaces:
+    - name: pipeline-ws
+  tasks:
+    - name: install-razee-agent
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export DEPLOYMENT_FILE="deployment.yml"
+            export CONFIG_REPO_BRANCH="master"
+            export CONFIG_REPO_NAME=''
+            export CONFIG_REPO_URL=''
+            export buildprops="build.properties"
+            
+            export INSTALL_RAZEE="$(params.install-razee)"
+            # pipeline build number is the doi build record id (if any)
+            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
+            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
+            # For doi plugin invocation if needed
+            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
+            # Single tag for the image built
+            export IMAGE_TAG=$IMAGE_TAGS
+            # Keep it in build.properties shuttle file
+            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
+            echo "================"
+            cat build.properties
+            echo "================"
+        - name: script
+          value: |
+            # uncomment to debug the script
+            # set -x
+            # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
+            # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
+            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/install_razee.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
+    - name: register-app-with-razee
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      runAfter: [install-razee-agent]
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
+            export DEPLOYMENT_FILE="deployment.yml"
+            export CONFIG_REPO_BRANCH="master"
+            export CONFIG_REPO_NAME=''
+            export CONFIG_REPO_URL=''
+            export buildprops="build.properties"
+            
+            export INSTALL_RAZEE="$(params.install-razee)"
+            # pipeline build number is the doi build record id (if any)
+            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
+            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
+            # For doi plugin invocation if needed
+            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
+            # Single tag for the image built
+            export IMAGE_TAG=$IMAGE_TAGS
+            # Keep it in build.properties shuttle file
+            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
+            echo "================"
+            cat build.properties
+            echo "================"
+        - name: script
+          value: |
+            # uncomment to debug the script
+            # set -x
+            # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
+            # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
+            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/register_app.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
