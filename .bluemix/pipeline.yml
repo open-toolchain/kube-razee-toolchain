@@ -24,7 +24,6 @@ stages:
     script: |+
       #!/bin/bash
       # set -x
-
       # Git repo cloned at $WORKING_DIR, copy into $ARCHIVE_DIR
       mkdir -p $ARCHIVE_DIR
       cp -R -n ./ $ARCHIVE_DIR/ || true
