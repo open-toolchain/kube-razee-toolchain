@@ -25,21 +25,17 @@ inputs:
     branch: master
     path: devops-insights
   - type: git
-    branch: trialv1
+    branch: master
     service: ${TEKTON_CATALOG_REPO}
-    path: temp/docker
+    path: linter
   - type: git
-    branch: trialv1
+    branch: master
     service: ${TEKTON_CATALOG_REPO}
-    path: temp/iks
+    path: tester
   - type: git
-    branch: trialv1
+    branch: master
     service: ${TEKTON_CATALOG_REPO}
-    path: temp/tests
-  - type: git
-    branch: trialv1
-    service: ${TEKTON_CATALOG_REPO}
-    path: temp/utils
+    path: utils
 triggers:
   - type: manual
     name: Manual Trigger
