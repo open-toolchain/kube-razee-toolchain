@@ -98,7 +98,6 @@ spec:
         - name: setup-script
           value: |
             # Keep it in build.properties shuttle file
-            echo "================"
             export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
             export CLUSTER_REGION=$(params.dev-region)
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
@@ -112,17 +111,11 @@ spec:
             echo "GIT_USER=$GIT_USER" >> build.properties
             echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
             source build.properties
-            export IMAGE_TAG=$IMAGE_TAGS
+            #export IMAGE_TAG=$IMAGE_TAGS
             echo "================"
             CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("razee-tekton") | not))')
             CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name') 
             CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url') 
-            echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}"
-            echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}"
-            echo "REGISTRY_URL $REGISTRY_URL"
-            echo "IMAGE_TAG $IMAGE_TAG"
-            echo "REGISTRY_NAMESPACE $REGISTRY_NAMESPACE"
-            echo "IMAGE_NAME $IMAGE_NAME"
             cat build.properties
         - name: script
           value: |
