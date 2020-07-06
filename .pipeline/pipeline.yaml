@@ -242,6 +242,8 @@ spec:
             source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/prepare_deploy.sh")
         - name: post-execution-script
           value: |
+            echo "CONFIG_REPO_URL=$CONFIG_REPO_URL" >> $SHUTTLE_PROPERTIES_FILE
+            echo "CONFIG_REPO_NAME=$CONFIG_REPO_NAME" >> $SHUTTLE_PROPERTIES_FILE
             echo "IMAGE_TAG $IMAGE_TAG"
         - name: pipeline-debug
           value: $(params.pipeline-debug)
