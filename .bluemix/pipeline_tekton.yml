@@ -38,8 +38,18 @@ inputs:
     path: utils
 triggers:
   - type: manual
-    name: Manual Trigger
+    name: Manual RUN
     eventListener: manual-run
+    properties:
+      - type: text
+        name: branch
+        value: master
+      - type: text
+        name: repository
+        value: ${APP_REPO_FULL}
+  - type: manual
+    name: Manual Install Razee
+    eventListener: manual-install-run
     properties:
       - type: text
         name: branch
@@ -85,5 +95,8 @@ properties:
     value: ${PROD_RESOURCE_GROUP}
     type: text
   - name: install-razee
-    value: $(INSTALL_RAZEE)
+    value: ${INSTALL_RAZEE}
+    type: text
+  - name: image-tag
+    value: ""
     type: text

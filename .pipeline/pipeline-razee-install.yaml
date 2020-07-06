@@ -31,10 +31,32 @@ spec:
       description: the namespace
     - name: pipeline-debug
       default: "0"
+    - name: image-tag
+    - name: install-razee
   workspaces:
     - name: pipeline-ws
   tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone-repo
+      params:
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: ibmcloud-apikey-secret-key
+          value: "toolchain-apikey"
+        - name: repository
+          value: $(params.repository)
+        - name: branch
+          value: $(params.branch)
+        - name: revision
+          value: $(params.revision)
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: output
+          workspace: pipeline-ws
     - name: install-razee-agent
+      runAfter: [git-clone]
       taskRef:
         name: iks-deploy-to-kubernetes
       params:
@@ -46,33 +68,17 @@ spec:
           value: $(params.cluster-name)
         - name: setup-script
           value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export DEPLOYMENT_FILE="deployment.yml"
-            export CONFIG_REPO_BRANCH="master"
-            export CONFIG_REPO_NAME=''
-            export CONFIG_REPO_URL=''
-            export buildprops="build.properties"
-            
-            export INSTALL_RAZEE="$(params.install-razee)"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
+            export GIT_URL="$(params.repository)"
+            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
+            export INSTALL_RAZEE=$(params.install-razee)
         - name: script
           value: |
             # uncomment to debug the script
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/install_razee.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/install_razee.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -91,33 +97,40 @@ spec:
           value: $(params.cluster-name)
         - name: setup-script
           value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export DEPLOYMENT_FILE="deployment.yml"
-            export CONFIG_REPO_BRANCH="master"
-            export CONFIG_REPO_NAME=''
-            export CONFIG_REPO_URL=''
-            export buildprops="build.properties"
-            
-            export INSTALL_RAZEE="$(params.install-razee)"
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
             # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
             echo "================"
+            export REGISTRY_URL="us.icr.io"
+            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
+            export REGISTRY_NAMESPACE=$(params.registry-namespace)
+            export IMAGE_NAME=$(params.image-name)
+            export DEPLOYMENT_FILE="deployment.yml"
+
+            GIT_REMOTE_URL=$( git config --get remote.origin.url )
+            GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
+            GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )
+            echo "GIT_USER=$GIT_USER" >> build.properties
+            echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
+            source build.properties
+            export IMAGE_TAG=$IMAGE_TAGS
+            echo "================"
+            CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("razee-tekton") | not))')
+            CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name') 
+            CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url') 
+            echo "CONFIG_REPO_NAME=${CONFIG_REPO_NAME}"
+            echo "CONFIG_REPO_URL=${CONFIG_REPO_URL}"
+            echo "REGISTRY_URL $REGISTRY_URL"
+            echo "IMAGE_TAG $IMAGE_TAG"
+            echo "REGISTRY_NAMESPACE $REGISTRY_NAMESPACE"
+            echo "IMAGE_NAME $IMAGE_NAME"
             cat build.properties
-            echo "================"
         - name: script
           value: |
             # uncomment to debug the script
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            #source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/register_app.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/register_app.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:

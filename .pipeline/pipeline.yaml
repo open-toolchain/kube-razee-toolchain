@@ -24,13 +24,13 @@ spec:
       description: image name
     - name: dev-region
     - name: dev-resource-group
-    - name: install-razee
     - name: cluster-name
       description: the name of the cluster to target
     - name: dev-cluster-namespace
       description: the namespace
     - name: pipeline-debug
       default: "0"
+    - name: install-razee
   workspaces:
     - name: pipeline-ws
   tasks:
@@ -225,28 +225,22 @@ spec:
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
             export DEPLOYMENT_FILE="deployment.yml"
             export CONFIG_REPO_BRANCH="master"
-            export CONFIG_REPO_NAME=''
-            export CONFIG_REPO_URL="build.properties"
-            export buildprops=""
-            # pipeline build number is the doi build record id (if any)
-            export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
+            GIT_REMOTE_URL=$( git config --get remote.origin.url )
+            GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
+            GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )
+            echo "GIT_USER=$GIT_USER" >> build.properties
+            echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
         - name: script
           value: |
             # uncomment to debug the script
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/prepare_deploy.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/prepare_deploy.sh")
+        - name: post-execution-script
+          value: |
+            echo "CONFIG_REPO_URL=$CONFIG_REPO_URL" >> $SHUTTLE_PROPERTIES_FILE
+            echo "CONFIG_REPO_NAME=$CONFIG_REPO_NAME" >> $SHUTTLE_PROPERTIES_FILE
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
@@ -267,86 +261,20 @@ spec:
           value: $(params.cluster-name)
         - name: setup-script
           value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-            export DEPLOYMENT_FILE="deployment.yml"
-            export CONFIG_REPO_BRANCH="master"
-            export CONFIG_REPO_NAME=''
-            export CONFIG_REPO_URL="build.properties"
-            export buildprops=""
             # pipeline build number is the doi build record id (if any)
             export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            echo "SOURCE_BUILD_NUMBER=$BUILD_NUMBER" >> build.properties
-            # For doi plugin invocation if needed
-            export TOOLCHAIN_ID=$PIPELINE_TOOLCHAIN_ID
-            # Single tag for the image built
-            export IMAGE_TAG=$IMAGE_TAGS
-            # Keep it in build.properties shuttle file
-            echo "IMAGE_TAG=$IMAGE_TAGS" >> build.properties
-            echo "================"
-            cat build.properties
-            echo "================"
+            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
         - name: script
           value: |
             # uncomment to debug the script
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/trigger_config.sh")
-        - name: post-execution-script
-          value: |
-            # Keep APP_URL in build.properties shuttle file
-            echo "APP_URL=$APP_URL" >> build.properties
-            cat build.properties
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/trigger_config.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
         - name: artifacts
           workspace: pipeline-ws
-    - name: publish-deployable-task
-      runAfter: [trigger-razee-deploy]
-      taskRef:
-        name: toolchain-publish-deployable-mapping
-      params:
-        - name: deployable-type
-          value: "kubernetes_cluster"
-        - name: deployable-region-id
-          value: $(tasks.trigger-razee-deploy.results.region)
-        - name: deployable-guid
-          value: $(tasks.trigger-razee-deploy.results.cluster-id)
-        - name: deployable-rg-id
-          value: $(tasks.trigger-razee-deploy.results.resource-group-id)
-        - name: pipeline-debug
-          value: $(params.pipeline-debug)
-    - name: check-health
-      taskRef:
-        name: iks-deploy-to-kubernetes
-      runAfter: [trigger-razee-deploy]
-      params:
-        - name: shuttle-properties-file
-          value: "build.properties"
-        - name: cluster-region
-          value: $(params.dev-region)
-        - name: resource-group
-          value: $(params.dev-resource-group)
-        - name: cluster-name
-          value: $(params.cluster-name)
-        - name: setup-script
-          value: |
-            export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
-        - name: script
-          value: |
-            # uncomment to debug the script
-            # set -x
-            # copy the script below into your app code repo (e.g. ./scripts/check_health.sh) and 'source' it from your pipeline job
-            #    source ./scripts/check_health.sh
-            # alternatively, you can source it from online script:
-            #    source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
-            # ------------------
-            # source: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh
-            # Check liveness and readiness probes to confirm application is healthy
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_health.sh")
-        - name: pipeline-debug
-          value: $(params.pipeline-debug)
-      workspaces:
-        - name: artifacts
-          workspace: pipeline-ws
+    

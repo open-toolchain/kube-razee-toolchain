@@ -43,6 +43,7 @@ git config --global user.name "Automatic Build: ibmcloud-toolchain-${PIPELINE_TO
 git config --global push.default simple
 
 echo "Fetching config repo"
+rm -rf "${CONFIG_REPO_NAME}"
 git clone "${CONFIG_ACCESS_REPO_URL}"
 cd "${CONFIG_REPO_NAME}"
 
