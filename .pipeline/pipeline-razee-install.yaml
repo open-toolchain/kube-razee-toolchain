@@ -99,7 +99,7 @@ spec:
           value: |
             # Keep it in build.properties shuttle file
             echo "================"
-            export REGISTRY_URL="us.icr.io"
+            export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
             export CLUSTER_REGION=$(params.dev-region)
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
