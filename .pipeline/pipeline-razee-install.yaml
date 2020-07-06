@@ -115,6 +115,7 @@ spec:
             CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("razee-tekton") | not))')
             CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name') 
             CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url') 
+            CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"}
             cat build.properties
         - name: script
           value: |
