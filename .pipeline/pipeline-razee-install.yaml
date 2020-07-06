@@ -105,7 +105,7 @@ spec:
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
             export IMAGE_NAME=$(params.image-name)
             export DEPLOYMENT_FILE="deployment.yml"
-
+            export IMAGE_TAG=$(params.image-tag)
             GIT_REMOTE_URL=$( git config --get remote.origin.url )
             GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
             GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )
