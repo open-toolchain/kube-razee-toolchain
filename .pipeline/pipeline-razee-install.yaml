@@ -31,7 +31,6 @@ spec:
       description: the namespace
     - name: pipeline-debug
       default: "0"
-    - name: image-tag
   workspaces:
     - name: pipeline-ws
   tasks:
@@ -105,14 +104,12 @@ spec:
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
             export IMAGE_NAME=$(params.image-name)
             export DEPLOYMENT_FILE="deployment.yml"
-            export IMAGE_TAG=$(params.image-tag)
             GIT_REMOTE_URL=$( git config --get remote.origin.url )
             GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
             GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )
             echo "GIT_USER=$GIT_USER" >> build.properties
             echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
             source build.properties
-            #export IMAGE_TAG=$IMAGE_TAGS
             echo "================"
             CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("razee-tekton") | not))')
             CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name') 
@@ -126,7 +123,7 @@ spec:
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/register_app.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/register_app.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:

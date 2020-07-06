@@ -31,8 +31,6 @@ spec:
     - name: dev-cluster-namespace
     - name: install-razee
       description: namespace dev
-    - name: image-tag
-      description: the image tag
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -81,8 +79,6 @@ spec:
             value: $(params.pipeline-debug)
           - name: install-razee
             value: $(params.install-razee)
-          - name: image-tag
-            value: $(params.image-tag)
         workspaces:
           - name: pipeline-ws
             persistentVolumeClaim:

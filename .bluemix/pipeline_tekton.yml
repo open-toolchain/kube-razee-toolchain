@@ -97,6 +97,3 @@ properties:
   - name: install-razee
     value: ${INSTALL_RAZEE}
     type: text
-  - name: image-tag
-    value: ""
-    type: text
