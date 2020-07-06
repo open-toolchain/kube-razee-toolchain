@@ -97,6 +97,8 @@ spec:
         - name: setup-script
           value: |
             # Keep it in build.properties shuttle file
+            #target registry region
+            ibmcloud target -r $(params.registry-region)
             export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
             export CLUSTER_REGION=$(params.dev-region)
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
@@ -116,7 +118,8 @@ spec:
             CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name') 
             CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url') 
             CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"}
-            cat build.properties
+            #target deployment region
+            ibmcloud target -r $(params.dev-region)
         - name: script
           value: |
             # uncomment to debug the script
