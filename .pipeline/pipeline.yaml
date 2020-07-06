@@ -231,7 +231,8 @@ spec:
             echo "GIT_USER=$GIT_USER" >> build.properties
             echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
             source build.properties
-            IMAGE_TAG=$IMAGE_TAGS
+            cat build.properties
+            IMAGE_TAG="2-master-e8e9fa6b-20200706145500"
             echo "IMAGE_TAG $IMAGE_TAG"
         - name: script
           value: |
