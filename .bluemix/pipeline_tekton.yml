@@ -44,9 +44,6 @@ triggers:
       - type: text
         name: branch
         value: master
-      - type: text
-        name: repository
-        value: ${APP_REPO_FULL}
   - type: manual
     name: Manual Install Razee
     eventListener: manual-install-run
@@ -54,9 +51,6 @@ triggers:
       - type: text
         name: branch
         value: master
-      - type: text
-        name: repository
-        value: ${APP_REPO_FULL}
   - type: git
     name: commit-push
     eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}
