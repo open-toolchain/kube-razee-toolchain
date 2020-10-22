@@ -117,7 +117,7 @@ stages:
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
     script:
-      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image_buildkit.sh
+      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image.sh
       $refType: text
   - name: Check vulnerabilities
     type: tester
