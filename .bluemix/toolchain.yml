@@ -133,7 +133,7 @@ services:
             }
           INSTALL_RAZEE: '{{form.pipeline.parameters.install-razee}}'
         execute: >
-          $env.pipeline_type === 'tekton' ? false : true
+          $env.pipeline_type === 'tekton' ? 'manual-run' : true
   webide:
     service_id: orion
 form:
