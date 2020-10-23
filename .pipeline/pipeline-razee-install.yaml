@@ -74,7 +74,7 @@ spec:
         - name: setup-script
           value: |
             export GIT_URL="$(params.repository)"
-            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
             export INSTALL_RAZEE=$(params.install-razee)
         - name: script
@@ -106,7 +106,7 @@ spec:
             #target registry region
             ibmcloud target -r $(params.registry-region)
             export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
-            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
             export IMAGE_NAME=$(params.image-name)
