@@ -105,11 +105,9 @@ spec:
             # Keep it in build.properties shuttle file
             #target registry region
             export CLUSTER_REGISTRY_REGION=$(echo "$(params.registry-region)" | awk -F ':' '{print $NF;}')
-            echo ${CLUSTER_REGISTRY_REGION}
             ibmcloud target -r ${CLUSTER_REGISTRY_REGION}
             export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
             export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
-            echo ${CLUSTER_REGION}
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
             export IMAGE_NAME=$(params.image-name)
@@ -126,7 +124,7 @@ spec:
             CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url')
             CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"}
             #target deployment region
-            ibmcloud target -r $(params.dev-region)
+            ibmcloud target -r $(CLUSTER_REGION)
         - name: script
           value: |
             # uncomment to debug the script
