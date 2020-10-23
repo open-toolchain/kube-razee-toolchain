@@ -293,7 +293,7 @@ spec:
           value: |
             # pipeline build number is the doi build record id (if any)
             export SOURCE_BUILD_NUMBER=$BUILD_NUMBER
-            export CLUSTER_REGION=$(params.dev-region)
+            export CLUSTER_REGION=$(echo $(params.dev-region) | awk -F ':' '{print $NF;}')
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
         - name: script
           value: |
