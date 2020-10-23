@@ -104,9 +104,12 @@ spec:
           value: |
             # Keep it in build.properties shuttle file
             #target registry region
-            ibmcloud target -r $(params.registry-region)
+            export CLUSTER_REGISTRY_REGION=$(echo "$(params.registry-region)" | awk -F ':' '{print $NF;}')
+            echo ${CLUSTER_REGISTRY_REGION}
+            ibmcloud target -r ${CLUSTER_REGISTRY_REGION}
             export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
             export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
+            echo ${CLUSTER_REGION}
             export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
             export REGISTRY_NAMESPACE=$(params.registry-namespace)
             export IMAGE_NAME=$(params.image-name)
