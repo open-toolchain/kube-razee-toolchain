@@ -157,10 +157,14 @@ else
   DEPLOYMENT_NAME=$( cat $DEPLOYMENT_FILE | yq read --doc $DEPLOYMENT_DOC_INDEX - "metadata.name" | sed "s/${RESOURCE_SUFFIX}//" | sed -E "s/(.+)/\1${RESOURCE_SUFFIX}/" )
 fi
 # assuming deployment.yml has an initial kind: Deployment, then ---, then a kind: Service for the port
-SERVICE_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="service") | .key')
+SERVICE_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select( (.value.kind | ascii_downcase=="service") and .value.spec.type=="NodePort" ) | .key'  | head -n 1 )
+if [ -z "$SERVICE_DOC_INDEX" ]; then
+  # fall back to non-NodePort service
+  SERVICE_DOC_INDEX=$(yq read --doc "*" --tojson $DEPLOYMENT_FILE | jq -r 'to_entries | .[] | select(.value.kind | ascii_downcase=="service") | .key' | head -n 1 )
+fi
 if [ -z "$SERVICE_DOC_INDEX" ]; then
   echo "No Kubernetes Service definition found in $DEPLOYMENT_FILE. Assuming service is YAML document with index 1"
-  DEPLOYMENT_DOC_INDEX=1
+  SERVICE_DOC_INDEX=1
 fi
 SERVICE_FILE="service.yml"
 yq read --doc $SERVICE_DOC_INDEX $DEPLOYMENT_FILE > "${SERVICE_FILE}"
