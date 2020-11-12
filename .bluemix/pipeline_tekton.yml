@@ -38,19 +38,13 @@ inputs:
     path: utils
 triggers:
   - type: manual
-    name: Manual RUN
+    name: manual-run
     eventListener: manual-run
-    properties:
-      - type: text
-        name: branch
-        value: master
+    properties: []
   - type: manual
     name: Manual Install Razee
     eventListener: manual-install-run
-    properties:
-      - type: text
-        name: branch
-        value: master
+    properties: []
   - type: git
     name: commit-push
     eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}
