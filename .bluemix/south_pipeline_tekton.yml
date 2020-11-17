@@ -3,7 +3,7 @@ inputs:
   - type: git
     branch: ${PIPELINE_REPO_BRANCH}
     service: ${PIPELINE_REPO}
-    path: .pipeline
+    path: .south-pipeline
   - type: git
     branch: master
     service: ${TEKTON_CATALOG_REPO}
@@ -36,6 +36,10 @@ inputs:
     branch: master
     service: ${TEKTON_CATALOG_REPO}
     path: utils
+  - type: git
+    branch: master
+    service: ${TEKTON_CATALOG_REPO}
+    path: cra
 triggers:
   - type: manual
     name: manual-run
