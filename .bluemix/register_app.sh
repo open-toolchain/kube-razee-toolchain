@@ -20,7 +20,6 @@
 
 # Input env variables (can be received via a pipeline environment properties.file.
 echo "IMAGE_NAME=${IMAGE_NAME}"
-echo "IMAGE_TAG=${IMAGE_TAG}"
 echo "REGISTRY_URL=${REGISTRY_URL}"
 echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
 echo "DEPLOYMENT_FILE=${DEPLOYMENT_FILE}"
@@ -366,7 +365,7 @@ echo "VERIFY RemoteResource deployment changes were applied"
 # Note DEPLOYMENT_NAME is set above
 DEPLOY_CHANGED_IMAGE_YQPATH="spec.template.spec.containers[0].image"
 IMAGE_REPOSITORY="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}"
-DEPLOY_IMAGE_EXPECTED_VALUE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+DEPLOY_IMAGE_EXPECTED_VALUE="${IMAGE_REPOSITORY}"
 # check for 7.5minutes
 for ITER in {1..15}
 do
@@ -378,7 +377,8 @@ do
     DEPLOY_LABEL_ACTUAL_VALUE=$(kubectl get deploy "${DEPLOYMENT_NAME}" -o yaml -n "${CLUSTER_NAMESPACE}" | yq r - "${DEPLOY_CHANGED_IMAGE_YQPATH}")
     # If deployed image contains @sha, only compare the value before the @, else unchanged
     DEPLOY_LABEL_ACTUAL_VALUE=$( echo "${DEPLOY_LABEL_ACTUAL_VALUE}" | sed -E "/@/ s/(.+)@.+/\1/" )
-
+    #remove the image tag
+    DEPLOY_LABEL_ACTUAL_VALUE=$( echo "${DEPLOY_LABEL_ACTUAL_VALUE}" | sed 's/:.*//')
     if [ "${DEPLOY_LABEL_ACTUAL_VALUE}" == "${DEPLOY_IMAGE_EXPECTED_VALUE}" ];
     then
       echo "Deployment image is: ${DEPLOY_LABEL_ACTUAL_VALUE}"
@@ -426,7 +426,8 @@ fi
 # or
 # us.icr.io/sample/hello-containers-20190823092122682:1-master-a15bd262-20190823100927@sha256:9b56a4cee384fa0e9939eee5c6c0d9912e52d63f44fa74d1f93f3496db773b2e
 echo "=========================================================="
-APP_NAME=$(kubectl get pods --namespace ${CLUSTER_NAMESPACE} -o json | jq -r '[ .items[] | select(.spec.containers[]?.image | test("'"${IMAGE_REPOSITORY}:${IMAGE_TAG}"'(@.+|$)")) | .metadata.labels.app] [0]')
+#APP_NAME=$(kubectl get pods --namespace ${CLUSTER_NAMESPACE} -o json | jq -r '[ .items[] | select(.spec.containers[]?.image | test("'"${IMAGE_REPOSITORY}"'(@.+|$)")) | .metadata.labels.app] [0]')
+APP_NAME=${DEPLOYMENT_NAME}
 echo -e "APP: ${APP_NAME}"
 echo "DEPLOYED PODS:"
 # can use "describe" for detailed output or "get" for short output:

@@ -1,0 +1,139 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: kube-razee-install-pipeline
+spec:
+  params:
+    - name: repository
+      description: the git repo
+      default: ""
+    - name: branch
+      description: the branch for the git repo
+      default: "master"
+    - name: revision
+      description: the git revision/commit for the git repo
+      default: ""
+    - name: registry-region
+      description: The IBM Cloud region for image registry
+    - name: registry-namespace
+      description: container registry namespace
+    - name: image-name
+      description: image name
+    - name: dev-region
+    - name: dev-resource-group
+    - name: install-razee
+    - name: cluster-name
+      description: the name of the cluster to target
+    - name: dev-cluster-namespace
+      description: the namespace
+    - name: pipeline-debug
+      default: "0"
+  workspaces:
+    - name: pipeline-ws
+  tasks:
+    - name: extract-repository-url
+      taskRef:
+        name: toolchain-extract-value
+      params:
+        - name: expression
+          # if a params.repository is given, it takes precedence
+          value: '. as $toolchain | ["$(params.repository)"] | if .[0]=="" then $toolchain | .services[] | select(.toolchain_binding.name=="repo") | .dashboard_url else .[0] end'
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+    - name: git-clone
+      taskRef:
+        name: git-clone-repo
+      params:
+        - name: continuous-delivery-context-secret
+          value: "secure-properties"
+        - name: ibmcloud-apikey-secret-key
+          value: "toolchain-apikey"
+        - name: repository
+          value: $(tasks.extract-repository-url.results.extracted-value)
+        - name: branch
+          value: $(params.branch)
+        - name: revision
+          value: $(params.revision)
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: output
+          workspace: pipeline-ws
+    - name: install-razee-agent
+      runAfter: [git-clone]
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            export GIT_URL="$(params.repository)"
+            export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
+            export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
+            export INSTALL_RAZEE=$(params.install-razee)
+        - name: script
+          value: |
+            # uncomment to debug the script
+            # set -x
+            # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
+            # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/install_razee.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws
+    - name: register-app-with-razee
+      taskRef:
+        name: iks-deploy-to-kubernetes
+      runAfter: [install-razee-agent]
+      params:
+        - name: cluster-region
+          value: $(params.dev-region)
+        - name: resource-group
+          value: $(params.dev-resource-group)
+        - name: cluster-name
+          value: $(params.cluster-name)
+        - name: setup-script
+          value: |
+            # Keep it in build.properties shuttle file
+            #target registry region
+            export CLUSTER_REGISTRY_REGION=$(echo "$(params.registry-region)" | awk -F ':' '{print $NF;}')
+            ibmcloud target -r ${CLUSTER_REGISTRY_REGION}
+            export REGISTRY_URL=$(ibmcloud cr info | grep -w 'Container Registry' | awk '{print $3;}' | grep -w 'icr')
+            export CLUSTER_REGION=$(echo "$(params.dev-region)" | awk -F ':' '{print $NF;}')
+            export CLUSTER_NAMESPACE=$(params.dev-cluster-namespace)
+            export REGISTRY_NAMESPACE=$(params.registry-namespace)
+            export IMAGE_NAME=$(params.image-name)
+            export DEPLOYMENT_FILE="deployment.yml"
+            GIT_REMOTE_URL=$( git config --get remote.origin.url )
+            GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
+            GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )
+            echo "GIT_USER=$GIT_USER" >> build.properties
+            echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
+            source build.properties
+            echo "================"
+            CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("razee-tekton") | not))')
+            CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name')
+            CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url')
+            CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"}
+            #target deployment region
+            ibmcloud target -r $(CLUSTER_REGION)
+        - name: script
+          value: |
+            # uncomment to debug the script
+            # set -x
+            # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
+            # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/register_app.sh")
+        - name: pipeline-debug
+          value: $(params.pipeline-debug)
+      workspaces:
+        - name: artifacts
+          workspace: pipeline-ws

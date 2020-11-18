@@ -85,9 +85,9 @@ echo "UPDATING config repo with ${ARTIFACTS_FOLDER_NAME}/...${DEPLOY_FILE}"
 echo -e "Locating target config repo using _toolchain.json file contents"
 ls -al _toolchain.json
 # find the other repo that is not the main app repo
-CONFIG_REPO_DETAILS=$( cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'") ' )
-CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r '.parameters.repo_name' )
-CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r '.parameters.repo_url' )
+CONFIG_REPO_DETAILS=$(cat _toolchain.json | jq -r '.services[] | select (.parameters.repo_url and .parameters.repo_url!="'"${GIT_URL}"'" and (.parameters.repo_url | contains("tekton-catalog") | not)  and (.parameters.repo_url | contains("kube-razee") | not))')
+CONFIG_REPO_NAME=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_name')
+CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url') 
 CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"} #remove trailing .git if present
 # Note this won't work if the config repo and the app repo are in different regions or git hosts - would have the wrong GIT_PASSWORD
 CONFIG_REPO_HOST=$(echo "${CONFIG_REPO_URL}" | sed -E "s~^https://([^/]+)/.+$~\1~")
