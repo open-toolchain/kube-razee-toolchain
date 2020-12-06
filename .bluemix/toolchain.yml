@@ -61,11 +61,12 @@ services:
       private_repo: true
   pipeline-repo:
     service_id: >
-      $env.pipeline_type === 'tekton' ? 'githubconsolidated' : ''
+      $env.pipeline_type === 'tekton' ? $env.source_provider ? $env.source_provider : 'hostedgit' : ''
     parameters:
+      repo_name: "kube-razee-toolchain-{{timestamp}}"
       repo_url: >
         $env.repository
-      type: "link"
+      type: $env.type || 'clone'
       has_issues: false
       enable_traceability: false
       kind: ['pipeline']
