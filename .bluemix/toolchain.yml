@@ -66,6 +66,7 @@ services:
       repo_name: "kube-razee-toolchain-{{timestamp}}"
       repo_url: >
         $env.repository
+      source_repo_url: "https://github.com/open-toolchain/kube-razee-toolchain"
       type: $env.type || 'clone'
       has_issues: false
       enable_traceability: false
