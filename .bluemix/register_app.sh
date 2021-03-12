@@ -405,6 +405,10 @@ else
   STATUS="fail"
 fi
 
+if [ -z "$TOOLCHAIN_ID" ]; then
+  export TOOLCHAIN_ID=${PIPELINE_TOOLCHAIN_ID}
+fi
+
 # Record deploy information
 if jq -e '.services[] | select(.service_id=="draservicebroker")' _toolchain.json; then
   if [ -z "${KUBERNETES_MASTER_ADDRESS}" ]; then
