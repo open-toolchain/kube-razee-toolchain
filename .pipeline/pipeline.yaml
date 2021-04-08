@@ -285,7 +285,7 @@ spec:
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/prepare_deploy.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/prepare_deploy.sh")
         - name: post-execution-script
           value: |
             echo "CONFIG_REPO_URL=$CONFIG_REPO_URL" >> $SHUTTLE_PROPERTIES_FILE
@@ -321,7 +321,7 @@ spec:
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/trigger_config.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/trigger_config.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
