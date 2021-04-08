@@ -381,6 +381,7 @@ spec:
             source build.properties
             cat build.properties
             IMAGE_TAG=$IMAGE_TAGS
+            export IBM_CLOUD_API_KEY="${PIPELINE_BLUEMIX_API_KEY}"
         - name: script
           value: |
             # uncomment to debug the script
