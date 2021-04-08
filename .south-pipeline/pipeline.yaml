@@ -380,8 +380,7 @@ spec:
             echo "GIT_PASSWORD=$GIT_PASSWORD" >> build.properties
             source build.properties
             cat build.properties
-            IMAGE_TAG=$IMAGE_TAGS
-            export IBM_CLOUD_API_KEY="${PIPELINE_BLUEMIX_API_KEY}"
+            export IMAGE_MANIFEST_SHA="$(tasks.containerize.results.image-digest)"
         - name: script
           value: |
             # uncomment to debug the script

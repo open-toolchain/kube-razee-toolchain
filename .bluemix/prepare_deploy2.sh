@@ -9,19 +9,15 @@ echo "REGISTRY_URL=${REGISTRY_URL}"
 echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
 echo "DEPLOYMENT_FILE=${DEPLOYMENT_FILE}"
 
-ibmcloud login -apikey $IBM_CLOUD_API_KEY --no-region
-ibmcloud cr login
-ibmcloud cr region-set $REGISTRY_URL
-ibmcloud cr image-digests --json --restrict ${REGISTRY_NAMESPACE}/${IMAGE_NAME} | jq -c '.[]' > list
-TARGET_IMAGE=$(grep -F "${IMAGE_TAG}" list)
-echo "TARGET_IMAGE $TARGET_IMAGE"
-IMAGE_MANIFEST_SHA=$(echo $TARGET_IMAGE | jq -r '.id')
-echo "IMAGE_MANIFEST_SHA $IMAGE_MANIFEST_SHA"
 if [ -z "${IMAGE_MANIFEST_SHA}" ]; then
-  IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
-else
-  IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}@${IMAGE_MANIFEST_SHA}"
+  ibmcloud login -apikey $IBM_CLOUD_API_KEY --no-region
+  ibmcloud cr login
+  ibmcloud cr region-set $REGISTRY_URL
+  ibmcloud cr image-digests --json --restrict ${REGISTRY_NAMESPACE}/${IMAGE_NAME} | jq -c '.[]' > list
+  TARGET_IMAGE=$(grep -F "${IMAGE_TAG}" list)
+  IMAGE_MANIFEST_SHA=$(echo $TARGET_IMAGE | jq -r '.id')
 fi
+IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}@${IMAGE_MANIFEST_SHA}"
 echo "IMAGE $IMAGE"
 # # View build properties
 # if [ -f build.properties ]; then 
