@@ -9,7 +9,12 @@ echo "REGISTRY_URL=${REGISTRY_URL}"
 echo "REGISTRY_NAMESPACE=${REGISTRY_NAMESPACE}"
 echo "DEPLOYMENT_FILE=${DEPLOYMENT_FILE}"
 
-if [ -z "${IMAGE_MANIFEST_SHA}" ]; then
+#extract digest for classic pipeline run
+if [ "${IBM_CLOUD_API_KEY}" ]; then
+  printenv
+  echo "classic run"
+  echo "${IBM_CLOUD_API_KEY}" | base64 > temp
+  cat temp
   ibmcloud login -apikey $IBM_CLOUD_API_KEY --no-region
   ibmcloud cr login
   ibmcloud cr region-set $REGISTRY_URL
@@ -17,8 +22,12 @@ if [ -z "${IMAGE_MANIFEST_SHA}" ]; then
   TARGET_IMAGE=$(grep -F "${IMAGE_TAG}" list)
   IMAGE_MANIFEST_SHA=$(echo $TARGET_IMAGE | jq -r '.id')
 fi
-IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}@${IMAGE_MANIFEST_SHA}"
-echo "IMAGE $IMAGE"
+
+if [ -z "${IMAGE_MANIFEST_SHA}" ]; then
+  IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}"
+else
+  IMAGE="${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}@${IMAGE_MANIFEST_SHA}"
+fi
 # # View build properties
 # if [ -f build.properties ]; then 
 #   echo "build.properties:"
