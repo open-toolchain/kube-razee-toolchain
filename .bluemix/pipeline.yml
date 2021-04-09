@@ -165,7 +165,7 @@ stages:
     artifact_dir: ''
     build_type: shell
     script:
-      $ref: prepare_deploy2.sh
+      $ref: prepare_deploy.sh
       $refType: text
   - name: Trigger Razee deploy
     type: builder
