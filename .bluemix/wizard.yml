@@ -19,7 +19,7 @@ steps:
     form: wizard_config
     advanced_form: repo-config
     conditions:
-      $ref: conditions.yml#/repo_conditions
+      $ref: conditions.yml#/config_repo_conditions
   - name: vault
     title:
       $ref: "#/messages/wizard.step.vault.title"
