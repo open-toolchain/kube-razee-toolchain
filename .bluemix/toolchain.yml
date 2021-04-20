@@ -1,5 +1,5 @@
 ---
-version: "2"
+version: "3"
 messages:
   $i18n: locales.yml
 template:
@@ -12,10 +12,6 @@ template:
   required:
     - build
     - repo
-  $configuration:
-    ENABLE_EXTENSIONS: true
-    ENABLE_IF_ELSE: true
-    EXPRESSION_MAXLENGTH: 1000
   info:
     git url: >
       "[" + $env.repository + "]" +
@@ -24,6 +20,8 @@ template:
       "[" + $env.branch + "]" +
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
+  wizard:
+    $ref: wizard.yml
 toolchain:
   name: "kube-razee-toolchain-{{timestamp}}"
   template:
@@ -50,6 +48,8 @@ services:
       enable_traceability: true
       private_repo: true
       legal: true
+      source_provider: >
+        $env.source_provider ? $env.source_provider : 'hostedgit'
   repo-config:
     service_id: >
       $env.source_provider ? $env.source_provider : 'hostedgit'
@@ -59,6 +59,8 @@ services:
       has_issues: false
       enable_traceability: false
       private_repo: true
+      source_provider: >
+        $env.source_provider ? $env.source_provider : 'hostedgit'
   pipeline-repo:
     service_id: >
       $env.pipeline_type === 'tekton' ? $env.source_provider ? $env.source_provider : 'hostedgit' : ''
