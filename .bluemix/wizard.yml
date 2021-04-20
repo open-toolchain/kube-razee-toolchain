@@ -69,7 +69,9 @@ form:
   wizard_app:
     schema:
       $ref: wizard_app.json
-
+  wizard_config:
+    schema:
+      $ref: wizard_config.json
   wizard_vault:
     parameters:
       key-protect: false
