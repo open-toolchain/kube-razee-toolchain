@@ -73,7 +73,7 @@ services:
       kind: ['pipeline']
   tekton-catalog-repo:
     service_id: >
-      $env.pipeline_type === 'tekton' ? $env.source_provider ? $env.source_provider : 'hostedgit' : ''
+      $env.pipeline_type !== 'tekton' ? '' : $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
       repo_name: >
         $env.toolchainName ? '{{toolchainName}}-tekton-catalog' : 'kube-razee-toolchain-{{timestamp}}' 
