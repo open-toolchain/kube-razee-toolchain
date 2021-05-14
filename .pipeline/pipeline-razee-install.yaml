@@ -131,7 +131,7 @@ spec:
             # set -x
             # This script checks the IBM Container Service cluster is ready, has a namespace configured with access to the private
             # image registry (using an IBM Cloud API Key), perform a kubectl deploy of container image and check on outcome.
-            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/dual-template/.bluemix/register_app.sh")
+            source <(curl -sSL "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master/.bluemix/register_app.sh")
         - name: pipeline-debug
           value: $(params.pipeline-debug)
       workspaces:
