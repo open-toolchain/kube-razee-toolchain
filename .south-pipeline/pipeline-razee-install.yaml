@@ -124,7 +124,7 @@ spec:
             CONFIG_REPO_URL=$( echo "${CONFIG_REPO_DETAILS}" | jq -r 'select (.parameters.repo_name | contains("config")) | .parameters.repo_url')
             CONFIG_REPO_URL=${CONFIG_REPO_URL%".git"}
             #target deployment region
-            ibmcloud target -r $CLUSTER_REGION
+            ibmcloud target -r "${CLUSTER_REGION}"
         - name: script
           value: |
             # uncomment to debug the script
