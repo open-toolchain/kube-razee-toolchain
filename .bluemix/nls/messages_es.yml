@@ -69,7 +69,7 @@ wizard.app.longDescription: "De forma predeterminada, le proporciona una aplicac
 wizard.app.clone: "Utilizar ejemplo predeterminado"
 wizard.app.link: "Utilizar su propia aplicación"
 wizard.config.title: "Config de Razee"
-wizard.config.longDescription: "Este repositorio es para almacenar..."
+wizard.config.longDescription: "Este repositorio es para almacenar artefactos de despliegue que supervisa el agente Razee."
 wizard.repo.invalidOptionMsg: "Ha elegido una opción de configuración no soportada. Habilite **Opciones avanzadas**."
 wizard.summary.title: "Resumen"
 wizard.summary.success.title: "¡Enhorabuena!"

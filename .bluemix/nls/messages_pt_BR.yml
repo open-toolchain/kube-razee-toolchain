@@ -69,7 +69,7 @@ wizard.app.longDescription: "Por padrão, ele fornece um aplicativo de amostra. 
 wizard.app.clone: "Usar amostra padrão"
 wizard.app.link: "Trazer seu próprio app"
 wizard.config.title: "Configuração do Razee"
-wizard.config.longDescription: "Este repositório é para armazenamento..."
+wizard.config.longDescription: "Este repositório é para armazenar artefatos de implementação que são monitorados pelo agente Razee."
 wizard.repo.invalidOptionMsg: "Você escolheu uma opção de configuração não suportada. Ative **Opções avançadas**."
 wizard.summary.title: "Resumo"
 wizard.summary.success.title: "Parabéns"

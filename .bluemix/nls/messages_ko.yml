@@ -69,7 +69,7 @@ wizard.app.longDescription: "기본적으로 샘플 앱을 제공합니다. 샘�
 wizard.app.clone: "기본 샘플 사용"
 wizard.app.link: "사용자 고유의 앱 가져오기"
 wizard.config.title: "Razee 구성"
-wizard.config.longDescription: "이 저장소는 저장용입니다...."
+wizard.config.longDescription: "이 저장소는 Razee 에이전트에서 모니터하는 배치 아티팩트를 저장하기 위한 것입니다."
 wizard.repo.invalidOptionMsg: "지원되지 않는 구성 옵션을 선택했습니다. **고급 옵션**을 사용으로 설정하십시오."
 wizard.summary.title: "요약"
 wizard.summary.success.title: "축하합니다!"

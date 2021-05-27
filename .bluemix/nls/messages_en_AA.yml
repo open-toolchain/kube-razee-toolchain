@@ -69,7 +69,7 @@ wizard.app.longDescription: "66:By default, it provides you with a sample app. Y
 wizard.app.clone: "67:Use default sample"
 wizard.app.link: "68:Bring your own app"
 wizard.config.title: "69:Razee Config"
-wizard.config.longDescription: "70:This repo is for storing ...."
+wizard.config.longDescription: "70:This repository is for storing deployment artifacts that are monitored by the Razee agent."
 wizard.repo.invalidOptionMsg: "71:You have chosen an unsupported configuration option. Please enable **Advanced Options**."
 wizard.summary.title: "72:Summary"
 wizard.summary.success.title: "73:Congratulations"

@@ -69,7 +69,7 @@ wizard.app.longDescription: "依預設，它會為您提供範例應用程式。
 wizard.app.clone: "使用預設範例"
 wizard.app.link: "帶來您自己的應用程式"
 wizard.config.title: "Razee 配置"
-wizard.config.longDescription: "此儲存庫用於儲存 ...."
+wizard.config.longDescription: "此儲存庫是用來儲存 Razee 代理程式所監視的部署構件。"
 wizard.repo.invalidOptionMsg: "您已選擇不受支援的配置選項。請啟用**進階選項**。"
 wizard.summary.title: "摘要"
 wizard.summary.success.title: "恭喜"
