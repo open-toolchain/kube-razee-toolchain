@@ -5,51 +5,57 @@ inputs:
     service: ${PIPELINE_REPO}
     path: .pipeline
   - type: git
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     service: ${TEKTON_CATALOG_REPO}
     path: git
   - type: git
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     service: ${TEKTON_CATALOG_REPO}
     path: container-registry
   - type: git
     service: ${TEKTON_CATALOG_REPO}
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     path: kubernetes-service
   - type: git
     service: ${TEKTON_CATALOG_REPO}
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     path: toolchain
   - type: git
     service: ${TEKTON_CATALOG_REPO}
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     path: devops-insights
   - type: git
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     service: ${TEKTON_CATALOG_REPO}
     path: linter
   - type: git
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     service: ${TEKTON_CATALOG_REPO}
     path: tester
   - type: git
-    branch: master
+    branch: ${DEFINITIONS_BRANCH}
     service: ${TEKTON_CATALOG_REPO}
     path: utils
 triggers:
   - type: manual
     name: manual-run
     eventListener: manual-run
-    properties: []
+    properties:
+      - name: branch
+        type: text
+        value: ${APP_REPO_BRANCH}
   - type: manual
     name: Manual Install Razee
     eventListener: manual-install-run
-    properties: []
+    properties:
+      - name: branch
+        type: text
+        value: ${APP_REPO_BRANCH}
   - type: git
     name: commit-push
     eventListener: ${GIT_COMMIT_EVENT_LISTENER_NAME}
     service: ${GIT_REPO}
-    branch: master
+    branch: ${APP_REPO_BRANCH}
     events: { "push": true }
 properties:
   - type: secure
@@ -84,4 +90,7 @@ properties:
     type: text
   - name: install-razee
     value: ${INSTALL_RAZEE}
+    type: text
+  - razee-scripts:
+    value: ${RAZEE-SCRIPTS}
     type: text

@@ -4,11 +4,19 @@ properties:
 - name: IBM_CLOUD_API_KEY
   value: ${API_KEY}
   type: secure
+- name: COMMONS_HOSTED_REGION
+  value: ${COMMONS_HOSTED_REGION}
+  type: text
+  default: "https://raw.githubusercontent.com/open-toolchain/commons/master"
+- name: APP_REPO_BRANCH
+  value: ${APP_REPO_BRANCH}
+  type: text
+  default: master
 stages:
 - name: BUILD
   inputs:
   - type: git
-    branch: master
+    branch: ${APP_REPO_BRANCH}
     service: ${GIT_REPO}    
   triggers:
   - type: commit
@@ -93,7 +101,7 @@ stages:
   - name: Check dockerfile
     type: tester
     script:
-      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_dockerfile.sh
+      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_dockerfile.sh
       $refType: text
   - name: Check registry
     type: builder
@@ -105,7 +113,7 @@ stages:
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
     script:
-      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_registry.sh
+      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_registry.sh
       $refType: text
   - name: Build container image
     type: builder
@@ -117,7 +125,7 @@ stages:
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
     script:
-      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/build_image_buildkit.sh
+      $ref: ${COMMONS_HOSTED_REGION}/scripts/build_image_buildkit.sh
       $refType: text
   - name: Check vulnerabilities
     type: tester
@@ -128,7 +136,7 @@ stages:
       region_id: ${REGISTRY_REGION_ID}
       api_key: ${API_KEY}
     script:
-      $ref: https://raw.githubusercontent.com/open-toolchain/commons/master/scripts/check_vulnerabilities.sh
+      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_vulnerabilities.sh
       $refType: text
 - name: DEPLOY WITH RAZEE
   inputs:

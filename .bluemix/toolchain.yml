@@ -24,6 +24,7 @@ template:
       "[" + $env.branch + "]" +
         "(" + $env.repository +
           "/tree/" + $env.branch + ")"
+    hosted_region: ""
 toolchain:
   name: "kube-razee-toolchain-{{timestamp}}"
   template:
@@ -41,10 +42,12 @@ services:
       repo_name: "hello-{{timestamp}}"
       repo_url: >
         $env.type === 'link' ?
-          $env.app_repo : 'https://github.com/open-toolchain/hello-containers'
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/hello-containers':
+          'https://github.com/open-toolchain/hello-containers'
       source_repo_url: >
         $env.type === 'fork' || $env.type === 'clone' ?
-          $env.app_repo : 'https://github.com/open-toolchain/hello-containers'
+          $env.app_repo : $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/hello-containers':
+          'https://github.com/open-toolchain/hello-containers'
       type: $env.type || 'clone'
       has_issues: true
       enable_traceability: true
@@ -64,8 +67,18 @@ services:
       $env.pipeline_type !== 'tekton' ? '' : $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
       repo_name: "kube-razee-toolchain-{{timestamp}}"
-      repo_url: "https://github.com/open-toolchain/kube-razee-toolchain"
-      source_repo_url: "https://github.com/open-toolchain/kube-razee-toolchain"
+      repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/kube-razee-toolchain"
+        } else {
+          "https://github.com/open-toolchain/kube-razee-toolchain"
+        } 
+      source_repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/kube-razee-toolchain"
+        } else {
+          "https://github.com/open-toolchain/kube-razee-toolchain"
+        } 
       type: 'clone'
       has_issues: false
       enable_traceability: false
@@ -75,8 +88,18 @@ services:
       $env.pipeline_type !== 'tekton' ? '' : $env.source_provider ? $env.source_provider : 'hostedgit'
     parameters:
       repo_name: "tekton-catalog-{{timestamp}}"
-      repo_url: "https://github.com/open-toolchain/tekton-catalog"
-      source_repo_url: "https://github.com/open-toolchain/tekton-catalog"
+      repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
+        } else {
+          "https://github.com/open-toolchain/tekton-catalog"
+        }
+      source_repo_url: >
+        if ( $env.template.info.hosted_region !== "" ) {
+          "https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/tekton-catalog"
+        } else {
+          "https://github.com/open-toolchain/tekton-catalog"
+        }
       type: 'clone'
       has_issues: false
       enable_traceability: false
@@ -128,6 +151,16 @@ services:
             } else {
               'gitlab-pr-listener';
             }
+          COMMONS_HOSTED_REGION: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/commons/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/commons/master'
+          RAZEE_SCRIPTS: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/kube-razee-toolchain/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master'
+          DEFINITIONS_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
+          APP_REPO_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
         execute: false
   build:
     service_id: pipeline
@@ -191,6 +224,16 @@ services:
               'grit-or-gitlab-commit';
             }
           INSTALL_RAZEE: '{{form.pipeline.parameters.install-razee}}'
+          COMMONS_HOSTED_REGION: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/commons/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/commons/master'
+          RAZEE_SCRIPTS: >
+            $env.template.info.hosted_region !== "" ? 'https://{{template.info.hosted_region}}.git.cloud.ibm.com/open-toolchain/kube-razee-toolchain/-/raw/main':
+            'https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master'
+          DEFINITIONS_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
+          APP_REPO_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
         execute: >
           $env.pipeline_type === 'tekton' ? 'manual-run' : true
   devops-insights:
