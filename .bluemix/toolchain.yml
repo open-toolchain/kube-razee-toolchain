@@ -135,7 +135,8 @@ services:
           ARTIFACTORY_DOCKER_CONFIG_JSON: '{{form.artifactoryComp.parameters.docker_config_json}}'
           PRIVATE_WORKER: '{{services.privateWorker.parameters.name}}'
           PIPELINE_REPO_BRANCH: >
-            $env.branch ? $env.branch : "master"
+            $env.branch ? $env.branch : 
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
           TEKTON_CATALOG_REPO: tekton-catalog-repo
           REGISTRY_REGION_ID: "{{form.pipeline.parameters.registry-region}}"
           REGISTRY_NAMESPACE: "{{form.pipeline.parameters.registry-namespace}}"
@@ -209,7 +210,8 @@ services:
             }
           PIPELINE_REPO: pipeline-repo
           PIPELINE_REPO_BRANCH: >
-            $env.branch ? $env.branch : "master"
+            $env.branch ? $env.branch : 
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
           TEKTON_CATALOG_REPO: tekton-catalog-repo
           GIT_COMMIT_EVENT_LISTENER_NAME: >
             if ( $env.source_provider === 'githubconsolidated' ) {
