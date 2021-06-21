@@ -28,6 +28,8 @@ spec:
     - name: dev-cluster-namespace
       description: namespace dev
     - name: install-razee
+    - name: razee-scripts
+      default: "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master"
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -72,6 +74,8 @@ spec:
             value: $(params.pipeline-debug)
           - name: install-razee
             value: $(params.install-razee)
+          - name: razee-scripts
+            value: $(params.razee-scripts)
         workspaces:
           - name: pipeline-ws
             persistentVolumeClaim:

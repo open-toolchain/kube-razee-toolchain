@@ -57,6 +57,8 @@ spec:
     - name: project-id
       description: project id
       default: ""
+    - name: razee-scripts
+      default: "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master"
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -125,6 +127,8 @@ spec:
             value: $(params.scm-type)
           - name: project-id
             value: $(params.project-id) 
+          - name: razee-scripts
+            value: $(params.razee-scripts)
         workspaces:
           - name: pipeline-ws
             persistentVolumeClaim:
