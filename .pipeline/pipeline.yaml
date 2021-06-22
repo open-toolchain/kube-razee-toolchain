@@ -50,6 +50,8 @@ spec:
       default: "0"
     - name: razee-scripts
       default: "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master"
+    - name: config-repo-branch
+      default: "master"
   workspaces:
     - name: pipeline-ws
   tasks:
@@ -272,7 +274,7 @@ spec:
           value: |
             export CLUSTER_NAMESPACE="$(params.dev-cluster-namespace)"
             export DEPLOYMENT_FILE="$(params.deployment-file)"
-            export CONFIG_REPO_BRANCH="master"
+            export CONFIG_REPO_BRANCH="$(params.config-repo-branch)"
             GIT_REMOTE_URL=$( git config --get remote.origin.url )
             GIT_USER=$( echo ${GIT_REMOTE_URL} | cut -d/ -f3 | cut -d: -f1 )
             GIT_PASSWORD=$( echo ${GIT_REMOTE_URL} | cut -d: -f3 | cut -d@ -f1 )

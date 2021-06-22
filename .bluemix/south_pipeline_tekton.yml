@@ -95,6 +95,9 @@ properties:
   - name: install-razee
     value: ${INSTALL_RAZEE}
     type: text
-  - razee-scripts:
-    value: ${RAZEE-SCRIPTS}
+  - name: razee-scripts
+    value: ${RAZEE_SCRIPTS}
+    type: text
+  - name: config-repo-branch
+    value: ${CONFIG_REPO_BRANCH}
     type: text

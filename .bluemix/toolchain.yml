@@ -236,6 +236,8 @@ services:
             $env.template.info.hosted_region !== "" ? 'main': 'master'
           APP_REPO_BRANCH: >
             $env.template.info.hosted_region !== "" ? 'main': 'master'
+          CONFIG_REPO_BRANCH: >
+            $env.template.info.hosted_region !== "" ? 'main': 'master'
         execute: >
           $env.pipeline_type === 'tekton' ? 'manual-run' : true
   devops-insights:

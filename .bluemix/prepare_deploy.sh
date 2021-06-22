@@ -128,6 +128,19 @@ echo "Fetching config repo"
 git clone "${CONFIG_ACCESS_REPO_URL}"
 
 cd "${CONFIG_REPO_NAME}"
+
+# note for initial empty repo, no branches will be found
+BRANCHES_FOUND=$(git branch)
+PUSH_OPTIONS=""
+if [ -z "${BRANCHES_FOUND}" ]; then
+  # Create default branch
+  if [ -z "${CONFIG_REPO_BRANCH}" ]; then CONFIG_REPO_BRANCH="master" ; fi
+  echo "Check-out initial config repo branch"
+  echo "CONFIG_REPO_BRANCH=${CONFIG_REPO_BRANCH}"
+  git checkout -b "${CONFIG_REPO_BRANCH}"
+  PUSH_OPTIONS="--set-upstream origin ${CONFIG_REPO_BRANCH}"
+fi
+
 echo "copy deploy file to ${ARTIFACTS_FOLDER_NAME}/${ARTIFACTS_DEPLOY_FILE_NAME}"
 mkdir -p "${ARTIFACTS_FOLDER_NAME}"
 cp "../${DEPLOY_FILE}" "${ARTIFACTS_FOLDER_NAME}/${ARTIFACTS_DEPLOY_FILE_NAME}"
@@ -137,7 +150,6 @@ git add .
 git status
 
 # note for initial empty repo, no branches will be found
-BRANCHES_FOUND=$(git branch)
 CHANGED_FILES=""
 if [ ! -z "${BRANCHES_FOUND}" ]; then 
   CHANGED_FILES=$(git diff-index HEAD --name-only)
@@ -148,7 +160,7 @@ if [ ! -z "${CHANGED_FILES}" ] ; then
   # Note, git commit gives an error if no changed files.
   git commit -m "Published ${ARTIFACTS_FOLDER_NAME}/...${DEPLOY_FILE} file."
   echo "Push commits:"
-  if git push 2>&1 | sed -E "s/$GIT_PASSWORD/*****/g" ; then
+  if git push ${PUSH_OPTIONS} 2>&1 | sed -E "s/$GIT_PASSWORD/*****/g" ; then
     echo "Successfully created deploy file in config repo at: ${CONFIG_REPO_URL}"
     echo ""
     cd ..

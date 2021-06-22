@@ -49,6 +49,8 @@ spec:
       description: namespace dev
     - name: razee-scripts
       default: "https://raw.githubusercontent.com/open-toolchain/kube-razee-toolchain/master"
+    - name: config-repo-branch
+      default: "master"
   resourcetemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -109,6 +111,8 @@ spec:
             value: $(params.pipeline-debug)
           - name: razee-scripts
             value: $(params.razee-scripts)
+          - name: config-repo-branch
+            value: $(params.config-repo-branch)
         workspaces:
           - name: pipeline-ws
             persistentVolumeClaim:

@@ -210,8 +210,9 @@ stages:
     value: ${PROD_CLUSTER_NAMESPACE}
     type: text
   - name: CONFIG_REPO_BRANCH
-    value: master
+    value: ${CONFIG_REPO_BRANCH}
     type: text
+    default: master
   - name: CONFIG_REPO_NAME
     value: ''
     type: text
@@ -267,8 +268,9 @@ stages:
     value: undefined
     type: text  
   - name: CONFIG_REPO_BRANCH
-    value: master
+    value: ${CONFIG_REPO_BRANCH}
     type: text
+    default: master
   jobs:
   - name: Install Razee agent
     type: deployer
