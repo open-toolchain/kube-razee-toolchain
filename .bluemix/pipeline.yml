@@ -100,9 +100,21 @@ stages:
   jobs:
   - name: Check dockerfile
     type: tester
-    script:
-      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_dockerfile.sh
-      $refType: text
+    # script:
+    #   $ref: ${COMMONS_HOSTED_REGION}/scripts/check_dockerfile.sh
+    #   $refType: text
+    script: |-
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/check_dockerfile.sh) and 'source' it from your pipeline job
+      #    source ./scripts/check_prebuild.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_dockerfile.sh")
+      # ------------------
+
+      # This script lints Dockerfile.
+      source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_dockerfile.sh")
   - name: Check registry
     type: builder
     build_type: cr
@@ -112,9 +124,21 @@ stages:
       api_key: ${API_KEY}
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
-    script:
-      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_registry.sh
-      $refType: text
+    # script:
+    #   $ref: ${COMMONS_HOSTED_REGION}/scripts/check_registry.sh
+    #   $refType: text
+    script: |-
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/check_registry.sh) and 'source' it from your pipeline job
+      #    source ./scripts/check_registry.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_registry.sh")
+      # ------------------
+
+      # This script checks presence of registry namespace.
+      source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_registry.sh")
   - name: Build container image
     type: builder
     build_type: cr
@@ -124,9 +148,23 @@ stages:
       api_key: ${API_KEY}
     namespace: ${REGISTRY_NAMESPACE}
     image_name: ${APP_NAME}
-    script:
-      $ref: ${COMMONS_HOSTED_REGION}/scripts/build_image_buildkit.sh
-      $refType: text
+    # script:
+    #   $ref: ${COMMONS_HOSTED_REGION}/scripts/build_image_buildkit.sh
+    #   $refType: text
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/build_image.sh) and 'source' it from your pipeline job
+      #    source ./scripts/build_image.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/build_image_buildkit.sh")
+      # ------------------
+
+      # This script does build a Docker image into IBM Container Service private image registry.
+      # Minting image tag using format: BUILD_NUMBER-BRANCH-COMMIT_ID-TIMESTAMP
+      
+      source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/build_image_buildkit.sh")
   - name: Check vulnerabilities
     type: tester
     test_type: vulnerabilityadvisor
@@ -135,9 +173,22 @@ stages:
     target:
       region_id: ${REGISTRY_REGION_ID}
       api_key: ${API_KEY}
-    script:
-      $ref: ${COMMONS_HOSTED_REGION}/scripts/check_vulnerabilities.sh
-      $refType: text
+    # script:
+    #   $ref: ${COMMONS_HOSTED_REGION}/scripts/check_vulnerabilities.sh
+    #   $refType: text
+    script: |
+      #!/bin/bash
+      # uncomment to debug the script
+      # set -x
+      # copy the script below into your app code repo (e.g. ./scripts/check_vulnerabilities.sh) and 'source' it from your pipeline job
+      #    source ./scripts/check_vulnerabilities.sh
+      # alternatively, you can source it from online script:
+      #    source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_vulnerabilities.sh")
+      # ------------------
+      # Check for vulnerabilities of built image using Vulnerability Advisor
+      
+      source <(curl -sSL "${COMMONS_HOSTED_REGION}/scripts/check_vulnerabilities.sh")
+      
 - name: DEPLOY WITH RAZEE
   inputs:
   - type: job
