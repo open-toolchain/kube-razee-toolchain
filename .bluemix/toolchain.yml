@@ -52,6 +52,7 @@ services:
       has_issues: true
       enable_traceability: true
       private_repo: true
+      legal: true
   repo-config:
     service_id: >
       $env.source_provider ? $env.source_provider : 'hostedgit'
