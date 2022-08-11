@@ -1,4 +1,6 @@
-# ![Icon](./.bluemix/razee.png) Develop a Kubernetes app with Razee
+# This template has been deprecated and is no longer supported.
+
+## ![Icon](./.bluemix/razee.png) Develop a Kubernetes app with Razee
 
 ### Continuously deliver a secure container app to a Kubernetes Cluster with Razee
 This Hello World application uses Docker with Node.js and includes a DevOps toolchain that is preconfigured for continuous delivery with Vulnerability Advisor, source control, issue tracking, and online editing, a configuration repository, setup scripts that install the Razee agent and application configuration to the IBM Kubernetes Service, and dynamic deployment of Kubernetes resources (e.g. pods) through the Razee agent monitoring the configuration repository.
